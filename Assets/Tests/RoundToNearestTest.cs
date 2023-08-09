@@ -10,7 +10,10 @@ public class RoundToNearestTest
     [Test]
     public void RoundToNearestTestSimplePasses()
     {
-        Assert.Equals(Helpers.RoundToNearest())
+        Assert.IsTrue(Helpers.RoundToNearest(2, -1, 3) == 3);
+        Assert.IsTrue(Helpers.RoundToNearest(2, 1, 3) == 1);
+        Assert.IsTrue(Helpers.RoundToNearest(2, 1.01F, 3) == 1.01F);
+        Assert.IsTrue(Helpers.RoundToNearest(1, 2, 0) == 2);//boundary, highest value in first position
     }
 
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use

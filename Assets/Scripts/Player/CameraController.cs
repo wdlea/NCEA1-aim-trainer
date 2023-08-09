@@ -30,23 +30,30 @@ public class CameraController : MonoBehaviour
     }
 
     Vector2 prevPos;
+    Vector3 rotationEuler;
     private void UpdateRotation()
     {
         Vector2 mousePos = Input.mousePosition;
         Vector2 delta = mousePos - prevPos;
 
-        Debug.Log(delta);
         prevPos = mousePos;
 
         delta *= sens;
 
-        Vector3 newRot = transform.rotation.eulerAngles + new Vector3(delta.y, delta.x, 0f);
-        newRot.x = Mathf.Clamp(newRot.x, MinYRotation, MaxYRotation);
-        newRot.y = Mathf.Clamp(newRot.y, MinXRotation, MaxXRotation);
+        rotationEuler +=
+            (Quaternion.AngleAxis(delta.x, Vector3.up) *
+            Quaternion.AngleAxis(delta.y, Vector3.right))
+            .eulerAngles;
 
         
 
-        transform.rotation = Quaternion.Euler(newRot);
+        //Vector3 euler = newRotation.eulerAngles;
+        //euler.x = Helpers.ClampWrapping(euler.x, MinYRotation, MaxYRotation, 360f);
+        //euler.y = Helpers.ClampWrapping(euler.y, MinXRotation, MaxXRotation, 360f);
+
+
+
+        transform.rotation = Quaternion.Euler(rotationEuler);
     }
 
     private void Shoot()

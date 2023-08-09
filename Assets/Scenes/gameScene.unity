@@ -702,11 +702,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8ce81f17864a2f458e80c967e624632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MinXRotation: -45
-  MaxXRotation: 45
+  MinXRotation: 359.99
+  MaxXRotation: 0
   MinYRotation: -45
   MaxYRotation: 85
-  sens: 1
+  sens: 0.1
   shootButton: 0
 --- !u!1001 &2393746976818669259
 PrefabInstance:

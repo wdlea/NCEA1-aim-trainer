@@ -5,29 +5,41 @@ public static partial class Helpers
 {
     public static float ClampWrapping(float value, float minimum, float maximum, float wrapPoint)
     {
+        minimum %= wrapPoint;
+        maximum %= wrapPoint;
         value %= wrapPoint;
-        if(maximum - minimum >= wrapPoint - minimum)
+
+        if(maximum < minimum)
         {
-            float wrappedMaximum = maximum % wrapPoint;
-            if(wrappedMaximum > minimum)
-            {
-                throw new System.Exception("Wrapped maximum exceeds minimum, L code");
-            }else if (value < wrappedMaximum)
-            {
-                return value;
-            }
-            else if(value > minimum)
-            {
-                return value;
-            }
-            else
-            {
-                return RoundToNearest(value, minimum, wrappedMaximum);
-            }
+            maximum += wrapPoint;
+        }
+        else if(minimum == maximum)
+        {
+            return minimum;
+        }
+        if(wrapPoint == 0)
+        {
+            throw new System.InvalidOperationException("cannot have a wrap point of 0");
+        }
+
+        if(value < maximum && value > minimum)
+        {
+            return value;
         }
         else
         {
-            return Mathf.Clamp(value, minimum, maximum);
+            float backDist = Mathf.Sign(minimum - value) == 1 ? minimum - value : minimum + wrapPoint - value;
+            float forwardDist = Mathf.Sign(value - maximum) == 1 ? value - maximum : value + wrapPoint - maximum;
+
+            if(backDist < forwardDist)//default to going forward(rounding to highest value)
+            {
+                return minimum;
+            }
+            else//forward
+            {
+                return maximum;
+            }
         }
+
     }
 }
