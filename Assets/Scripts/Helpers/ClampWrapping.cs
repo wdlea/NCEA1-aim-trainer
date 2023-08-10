@@ -5,9 +5,9 @@ public static partial class Helpers
 {
     public static float ClampWrapping(float value, float minimum, float maximum, float wrapPoint)
     {
-        minimum %= wrapPoint;
-        maximum %= wrapPoint;
-        value %= wrapPoint;
+        minimum = Helpers.Modulo(minimum, wrapPoint);
+        maximum = Helpers.Modulo(maximum, wrapPoint);
+        value   = Helpers.Modulo(value, wrapPoint);
 
         if(maximum < minimum)
         {

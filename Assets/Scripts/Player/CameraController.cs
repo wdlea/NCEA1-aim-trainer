@@ -45,11 +45,11 @@ public class CameraController : MonoBehaviour
             Quaternion.AngleAxis(delta.y, Vector3.right))
             .eulerAngles;
 
-        
 
-        //Vector3 euler = newRotation.eulerAngles;
-        //euler.x = Helpers.ClampWrapping(euler.x, MinYRotation, MaxYRotation, 360f);
-        //euler.y = Helpers.ClampWrapping(euler.y, MinXRotation, MaxXRotation, 360f);
+
+
+        rotationEuler.x = Helpers.ClampWrapping(rotationEuler.x, MinYRotation, MaxYRotation, 360f);
+        //rotationEuler.y = Helpers.ClampWrapping(rotationEuler.y, MinXRotation, MaxXRotation, 360f);
 
 
 
