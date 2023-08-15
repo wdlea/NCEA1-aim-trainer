@@ -10,6 +10,7 @@ namespace Shootables
         public override void OnHit()
         {
             ScoreSystem.CurrentScore += pointDifference;
+            Destroy(this.gameObject);
         }
     }
 }

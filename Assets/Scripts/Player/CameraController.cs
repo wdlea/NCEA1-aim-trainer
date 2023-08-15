@@ -48,7 +48,7 @@ public class CameraController : MonoBehaviour
 
 
 
-        rotationEuler.x = Helpers.ClampWrapping(rotationEuler.x, MinYRotation, MaxYRotation, 360f);
+        //rotationEuler.x = Helpers.ClampWrapping(rotationEuler.x, MinYRotation, MaxYRotation, 360f);
         //rotationEuler.y = Helpers.ClampWrapping(rotationEuler.y, MinXRotation, MaxXRotation, 360f);
 
 
@@ -58,6 +58,7 @@ public class CameraController : MonoBehaviour
 
     private void Shoot()
     {
+        Debug.Log("pew");
         if(Physics.Raycast(lookRay, out RaycastHit hit))
         {
             foreach(Shootables.Shootable shoot in hit.transform.GetComponents<Shootables.Shootable>())

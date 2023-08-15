@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class Helpers 
 {
     public static float ClampWrapping(float value, float minimum, float maximum, float wrapPoint)
     {
-        minimum = Helpers.Modulo(minimum, wrapPoint);
-        maximum = Helpers.Modulo(maximum, wrapPoint);
         value   = Helpers.Modulo(value, wrapPoint);
 
         if(maximum < minimum)
@@ -22,7 +19,7 @@ public static partial class Helpers
             throw new System.InvalidOperationException("cannot have a wrap point of 0");
         }
 
-        if(value < maximum && value > minimum)
+        if((value <= maximum ) && (value >= minimum))
         {
             return value;
         }
@@ -33,11 +30,11 @@ public static partial class Helpers
 
             if(backDist < forwardDist)//default to going forward(rounding to highest value)
             {
-                return minimum;
+                return Modulo(minimum, 360);
             }
             else//forward
             {
-                return maximum;
+                return Modulo(maximum, 360);
             }
         }
 

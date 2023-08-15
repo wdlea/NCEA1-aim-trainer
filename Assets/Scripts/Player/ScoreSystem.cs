@@ -9,15 +9,16 @@ public static class ScoreSystem
 {
     private static int currentScore;
 
-    public static Notify OnScoreUpdate;
+    public static Notify OnScoreUpdate = null;
 
     public static int CurrentScore
     {
         get => currentScore;
         set
         {
-            value = currentScore;
-            OnScoreUpdate();
+            currentScore = value;
+            OnScoreUpdate?.Invoke();
+            Debug.Log("New score: " + currentScore.ToString());
         }
     }
 }
