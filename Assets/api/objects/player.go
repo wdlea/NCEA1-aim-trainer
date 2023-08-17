@@ -18,7 +18,7 @@ type Frame struct {
 	X, Y, Dx, Dy float32
 }
 
-func (p *Player) HostGame() {
+func (p *Player) HostGame() (ok bool) {
 	g := new(Game)
 
 	var err error
@@ -27,7 +27,7 @@ func (p *Player) HostGame() {
 
 	if err != nil {
 		fmt.Printf("Error in creating game token: %s", err.Error())
-		return
+		return false
 	}
 
 	p.Game = g
@@ -36,6 +36,8 @@ func (p *Player) HostGame() {
 	p.resetPos()
 
 	g.ListEntry = ActiveGames.AddLast(g)
+
+	return true
 }
 
 func (p *Player) JoinGame(g *Game) (ok bool) {

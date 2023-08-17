@@ -38,8 +38,7 @@ type Game struct {
 
 	ListEntry *ll.LinkedListNode[*Game] `json:"-"`
 
-	Name     string `json:"-"`
-	Password string `json:"-"`
+	Name string
 }
 
 func (g *Game) RemovePlayer(p *Player) {
@@ -89,4 +88,7 @@ type JoinGameRequest struct {
 	Name string //name is used like a password and is not published in any way, rather clients must obtain this from host
 }
 
-type HostGameResponse JoinGameRequest
+type HostGameResponse {
+	Ok  bool
+	Name string
+}

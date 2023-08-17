@@ -50,25 +50,60 @@ func HandleFrame(pak []byte, user *objects.Player) (response []Packet, doTermina
 		return
 	}
 
-	user.ApplyFrame(frame)
+	if user.Game != nil {
+		user.ApplyFrame(frame)
 
-	marshalledGame, err := json.Marshal(&user.Game)
-	if err != nil {
-		return
+		marshalledGame, err := json.Marshal(&user.Game)
+		if err != nil {
+			return
+		}
+
+		response = append(
+			response,
+			Packet{
+				Type:    'F',
+				Content: marshalledGame,
+			},
+		)
+	} else {
+		response = append(
+			response,
+			Packet{
+				Type: 'E', //error packet
+				Content: []byte(
+					"User not in game",
+				),
+			},
+		)
 	}
-
-	gamePacket := Packet{
-		Type:    'F',
-		Content: marshalledGame,
-	}
-
-	response = append(response, gamePacket)
 
 	return
 }
 
 func HandleCreateGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
-	user.HostGame()
+	resp := HostGameResponse{
+		Ok:   user.HostGame(),
+		Name: user.Game.Name,
+	}
+	if !resp.Ok {
+		resp.Name = "" //hide name to avoid unintentioanl behavior caused by me being lazy
+	}
+
+	marshaledResp, err := json.Marshal(resp)
+
+	if err != nil {
+		fmt.Printf("Error while marshaling: %s\n", err)
+		return
+	}
+
+	response = append(
+		response,
+		Packet{
+			Type:    'C',
+			Content: marshaledResp,
+		},
+	)
+
 	return
 }
 
@@ -80,10 +115,43 @@ func HandleJoinGame(pak []byte, user *objects.Player) (response []Packet, doTerm
 		fmt.Printf("Error: %s while unmarshaling %s", err.Error(), string(pak))
 	}
 
+	game := FindGame(joinReq.Name)
+
+	if game == nil {
+		response = append(
+			response,
+			Packet{
+				Type: 'E', //error packet
+				Content: []byte(
+					"No joinable game of that name",
+				),
+			},
+		)
+	} else {
+		response = append(
+			response,
+			Packet{
+				Type: 'J',
+				Content: []byte(
+					"success",
+				),
+			},
+		)
+	}
+
 	return
 }
 
 func HandleLeaveGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
 	user.LeaveGame()
+	response = append(
+		response,
+		Packet{
+			Type: 'L', //error packet
+			Content: []byte(
+				"success",
+			),
+		},
+	)
 	return
 }
