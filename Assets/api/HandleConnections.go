@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/wdlea/aimtrainerAPI/api"
+	"github.com/wdlea/aimtrainerAPI/objects"
 )
 
 const BUFFER_SIZE = 1024
 const PACKET_SEPERATOR = '\n'
 
+// packets with lowercase types are serverbound, uppercase types are client bound
 type packet struct {
 	Type    byte
 	Content []byte
@@ -20,7 +21,8 @@ func HandleConn(conn net.Conn) {
 
 	fmt.Printf("New player connection from %s \n", conn.RemoteAddr().String())
 
-	user := new(api.Player)
+	user := new(objects.Player)
+	defer user.Dispose()
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
 	inboundPacketChan := make(chan packet, 8)
@@ -84,7 +86,7 @@ func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
 	}
 }
 
-func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *api.Player) {
+func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.Player) {
 	defer close(outbound)
 
 	for {

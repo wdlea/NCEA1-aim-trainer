@@ -7,22 +7,11 @@ import (
 	"os"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
-	"github.com/wdlea/aimtrainerAPI/api"
+	"github.com/wdlea/aimtrainerAPI/objects"
 )
 
-var ActiveGames *ll.LinkedList[*api.Game]
-
-func GetGame(name string) *ll.LinkedListNode[*api.Game] {
-	for game := ActiveGames.First; game != nil; game = game.Next {
-		if game.Value.State == api.GAME_STATE_PENDING_PLAYERS && game.Value.LobbyName == name { //cheap check, then expensive one
-			return game
-		}
-	}
-	return nil
-}
-
 func main() {
-	ActiveGames = new(ll.LinkedList[*api.Game])
+	objects.ActiveGames = new(ll.LinkedList[*objects.Game])
 
 	listener, err := net.Listen("tcp", ":8088")
 	if err != nil {
@@ -66,7 +55,7 @@ AcceptLoop:
 
 }
 
-func AcceptAllConnections(listener net.Listener, connChannel chan net.Conn) {
+func AcceptAllConnections(listener net.Listener, connChannel chan<- net.Conn) {
 	for {
 		conn, err := listener.Accept()
 
