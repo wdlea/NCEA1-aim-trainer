@@ -3,8 +3,9 @@ WORKDIR /go/src/github.com/wdlea/aintrainerapi
 
 COPY go.mod go.mod
 
-# COPY go.sum go.sum # i dont need these becuase i dont use external depenencies
-# RUN go get .
+#import external dependencies
+COPY go.sum go.sum
+RUN go get .
 
 COPY main.go main.go
 

@@ -6,13 +6,23 @@ import (
 	"net"
 	"os"
 
+	ll "github.com/wdlea/GOGenericLinkedList"
 	"github.com/wdlea/aimtrainerAPI/api"
 )
 
-var games []*api.Game
+var ActiveGames *ll.LinkedList[*api.Game]
+
+func GetGame(name string) *ll.LinkedListNode[*api.Game] {
+	for game := ActiveGames.First; game != nil; game = game.Next {
+		if !game.Value.Started && game.Value.LobbyName == name { //cheap check, then expensive one
+			return game
+		}
+	}
+	return nil
+}
 
 func main() {
-	games = make([]*api.Game, 0, 32)
+	ActiveGames = new(ll.LinkedList[*api.Game])
 
 	listener, err := net.Listen("tcp", ":8088")
 	if err != nil {
