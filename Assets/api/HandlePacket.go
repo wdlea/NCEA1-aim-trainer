@@ -14,10 +14,6 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *objects.Player) 
 		{
 			return HandleFrame(marshalledPacket, user)
 		}
-	case 's': //start game(host only)
-		{
-			return HandleStartGame(marshalledPacket, user)
-		}
 	case 'j': //join game
 		{
 			return HandleJoinGame(marshalledPacket, user)
@@ -37,7 +33,7 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *objects.Player) 
 		}
 	default:
 		{
-			fmt.Printf("Invalid packet type requested: %s, terminating connection\n", typeByte)
+			fmt.Printf("Invalid packet type requested: %s, terminating connection\n", string(typeByte))
 			doTerminate = true
 		}
 	}
@@ -47,7 +43,7 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *objects.Player) 
 
 func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
 	var frame objects.Frame
-	err := json.Unmarshal(pak, frame)
+	err := json.Unmarshal(pak, &frame)
 	if err != nil {
 		fmt.Printf("Unable to unmarshal message %s from user", string(pak))
 		return
@@ -55,7 +51,7 @@ func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTermina
 
 	user.ApplyFrame(frame)
 
-	marshalledGame, err := json.Marshal(user.Game)
+	marshalledGame, err := json.Marshal(&user.Game)
 	if err != nil {
 		return
 	}
@@ -71,14 +67,22 @@ func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTermina
 }
 
 func HandleCreateGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
-
+	user.HostGame()
+	return
 }
+
 func HandleJoinGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+	var joinReq objects.JoinGameRequest
 
-}
-func HandleStartGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+	err := json.Unmarshal(pak, &joinReq)
+	if err != nil {
+		fmt.Printf("Error: %s while unmarshaling %s", err.Error(), string(pak))
+	}
 
+	return
 }
+
 func HandleLeaveGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
 	user.LeaveGame()
+	return
 }

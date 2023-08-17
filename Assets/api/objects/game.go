@@ -10,6 +10,20 @@ type GameState int
 
 var ActiveGames *ll.LinkedList[*Game]
 
+func FindGame(name string) *ll.LinkedListNode[*Game] {
+	if len(name) == GAME_NAME_LENGTH {
+		for game := ActiveGames.First; game != nil; game = game.Next {
+			if game.Value.Name == name {
+				return game
+			}
+		}
+	} else {
+		fmt.Println("Name with invalid length supplied, skipping")
+	}
+
+	return nil
+}
+
 const (
 	GAME_WAITING_FOR_PLAYERS GameState = iota
 	GAME_RUNNING
@@ -20,8 +34,12 @@ const (
 type Game struct {
 	Players [2]*Player
 	State   GameState
+	Host    *Player //avoid circular marshal
 
-	ListEntry ll.LinkedListNode[*Game] `json:"-"`
+	ListEntry *ll.LinkedListNode[*Game] `json:"-"`
+
+	Name     string `json:"-"`
+	Password string `json:"-"`
 }
 
 func (g *Game) RemovePlayer(p *Player) {
@@ -35,6 +53,10 @@ func (g *Game) RemovePlayer(p *Player) {
 	if g.Players[0] == nil && g.Players[1] == nil {
 		g.Dispose()
 	}
+}
+
+func (g *Game) StartGame() {
+
 }
 
 // remove all references of this game, resulting in the garbage collector destroying it
@@ -62,3 +84,9 @@ func (g *Game) removeFromPlayerList(p *Player) {
 		fmt.Println("Tried to remove player not in game")
 	}
 }
+
+type JoinGameRequest struct {
+	Name string //name is used like a password and is not published in any way, rather clients must obtain this from host
+}
+
+type HostGameResponse JoinGameRequest
