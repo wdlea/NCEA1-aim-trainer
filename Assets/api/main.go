@@ -14,7 +14,7 @@ var ActiveGames *ll.LinkedList[*api.Game]
 
 func GetGame(name string) *ll.LinkedListNode[*api.Game] {
 	for game := ActiveGames.First; game != nil; game = game.Next {
-		if !game.Value.Started && game.Value.LobbyName == name { //cheap check, then expensive one
+		if game.Value.State == api.GAME_STATE_PENDING_PLAYERS && game.Value.LobbyName == name { //cheap check, then expensive one
 			return game
 		}
 	}

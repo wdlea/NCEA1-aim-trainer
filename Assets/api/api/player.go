@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"time"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
@@ -28,7 +29,7 @@ func (p *Player) Tick(deltaTime float64) {
 }
 
 func (p *Player) JoinGame(game *ll.LinkedListNode[*Game], attemptedPassword string) (sucess bool, passwordIncorrect bool, lobbyFull bool, gameStarted bool) {
-	if game.Value.Started {
+	if game.Value.State != GAME_STATE_PENDING_PLAYERS {
 		gameStarted = true
 		return
 	}
@@ -42,5 +43,34 @@ func (p *Player) JoinGame(game *ll.LinkedListNode[*Game], attemptedPassword stri
 	}
 
 	sucess = true
+
+	p.CurrentGame = game
 	return
+}
+
+func (p *Player) LeaveGame() {
+	if p.CurrentGame != nil {
+		playerIndex := -1
+		for i, player := range p.CurrentGame.Value.Players {
+			if p == player {
+				playerIndex = i
+				break
+			}
+		}
+		if playerIndex == -1 {
+			fmt.Println("Player removed from game they were not in")
+			return
+		} else {
+			if playerIndex < len(p.CurrentGame.Value.Players)-1 {
+				p.CurrentGame.Value.Players = append(p.CurrentGame.Value.Players[:playerIndex], p.CurrentGame.Value.Players[playerIndex+1:]...)
+			} else {
+				p.CurrentGame.Value.Players = p.CurrentGame.Value.Players[:playerIndex]
+			}
+		}
+	}
+	p.CurrentGame = nil
+}
+
+func (p *Player) CreateGame(settings GameSettings) {
+	p.LeaveGame()
 }

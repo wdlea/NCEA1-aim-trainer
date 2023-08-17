@@ -1,14 +1,19 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/wdlea/aimtrainerAPI/api"
-	"github.com/wdlea/aimtrainerAPI/packets"
 )
+
+const BUFFER_SIZE = 1024
+const PACKET_SEPERATOR = '\n'
+
+type packet struct {
+	Type    byte
+	Content []byte
+}
 
 func HandleConn(conn net.Conn) {
 	defer conn.Close()
@@ -17,113 +22,106 @@ func HandleConn(conn net.Conn) {
 
 	user := new(api.Player)
 
-	for {
-		buf := make([]byte, 2048)
+	inboundDataChan := make(chan byte, BUFFER_SIZE)
+	inboundPacketChan := make(chan packet, 8)
 
+	outboundPacketChan := make(chan packet, 8)
+
+	go HandleRecieve(inboundDataChan, conn)
+	go HandleBytes(inboundDataChan, inboundPacketChan)
+	go HandlePackets(inboundPacketChan, outboundPacketChan, user)
+	HandleSend(outboundPacketChan, conn) //block until finished, if one of the above goroutines errors out, it will "cascade" down to this one
+}
+
+func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
+	defer close(dataChan)
+
+	for {
+		buf := make([]byte, BUFFER_SIZE)
 		n, err := conn.Read(buf)
-		if err != nil {
-			fmt.Printf("Error occurred on packet recieve: %s from connection %s\n", err.Error(), conn.RemoteAddr().String())
-			break
-		}
-		if n <= 0 {
-			fmt.Printf("No data recieved from connection when packet was sent from %s\n", conn.RemoteAddr().String())
-			break
+
+		if err == net.ErrClosed {
+			return
+		} else if err != nil {
+			fmt.Printf("Error while recieving fron conn: %s \n", err.Error())
 		}
 
 		buf = buf[:n]
 
-		fmt.Printf("Packet %s(length %d) recieved from %s\n", string(buf), n, conn.RemoteAddr().String())
-
-		marshalledPacket := buf[1:]
-
-		doResp, resp := HandlePacket(buf[0], marshalledPacket, user)
-		if doResp {
-			_, err := conn.Write(resp)
-			if err != nil {
-				fmt.Printf("Error when responding to client: %s \n", err.Error())
-			}
+		for _, b := range buf {
+			dataChan <- b
 		}
 	}
 }
 
-func HandlePacket(typeByte byte, marshalledPacket []byte, user *api.Player) (doResponse bool, response []byte) {
-packetTypeSwitch:
-	switch typeByte {
-	case 'f': //update position
-		{
-			var f api.Frame
-			err := json.Unmarshal(marshalledPacket, &f)
+func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
+	defer close(packetChan)
 
-			if err != nil {
-				break packetTypeSwitch
-			}
-			f.RecvTime = time.Now()
+	for {
+		encodedPacket := make([]byte, 0, 256)
 
-			user.ApplyFrame(f)
+		typeByte, open := <-dataChan
 
-			break packetTypeSwitch
+		if !open {
+			return
 		}
-	case 's': //start game(host only)
-		{
-			break packetTypeSwitch
-		}
-	case 'j': //join game
-		{
-			var req packets.JoinGameRequest
-			err := json.Unmarshal(marshalledPacket, &req)
 
-			resp := new(packets.JoinGameResponse)
+	packetLoop:
+		for {
+			currentByte := <-dataChan
 
-			if err != nil {
-				resp.IsFail = true
-			} else if user.CurrentGame != nil {
-				resp.Status = packets.JOIN_GAME_ALREADY_IN_GAME
+			if currentByte == PACKET_SEPERATOR {
+				break packetLoop
 			} else {
-				game := GetGame(req.LobbyName)
-				if game == nil {
-					resp.Status = packets.JOIN_GAME_NOT_FOUND
-				} else {
-
-					success, incorrectp, full, started := user.JoinGame(game, req.Password)
-
-					if success {
-						resp.Status = packets.JOIN_GAME_SUCCESS
-						user.CurrentGame = game
-					} else if started {
-						resp.Status = packets.JOIN_GAME_ALREADY_STARTED
-					} else if incorrectp {
-						resp.Status = packets.JOIN_GAME_INCORRECT_PASSWORD
-					} else if full {
-						resp.Status = packets.JOIN_GAME_LOBBY_FULL
-					} else {
-						resp.Status = packets.JOIN_GAME_UNKNOWN_ERROR
-
-						fmt.Println("Unknown unsucess when joining game")
-					}
-				}
-
-			}
-
-			var mar []byte
-			err = nil
-			mar, err = json.Marshal(resp)
-
-			response = append([]byte("j"), mar...)
-			doResponse = err == nil
-
-			if !doResponse {
-				fmt.Printf("Error while marshalling packet: %s", err.Error())
+				encodedPacket = append(encodedPacket, currentByte)
 			}
 		}
-	case 'c': //create game
-		{
-			break packetTypeSwitch
-		}
-	case 'l': //leave game
-		{
-			break packetTypeSwitch
+
+		packetChan <- packet{
+			Type:    typeByte,
+			Content: encodedPacket,
 		}
 	}
+}
 
-	return
+func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *api.Player) {
+	defer close(outbound)
+
+	for {
+		pak, open := <-inbound
+		if !open {
+			return
+		}
+
+		resps, terminate := HandlePacket(pak.Type, pak.Content, user)
+
+		if terminate {
+			fmt.Println("Connection terminated by client through intentional behaviour") //connection lost, but cleanly
+			return
+		}
+
+		for _, resp := range resps {
+			outbound <- resp
+		}
+	}
+}
+
+func HandleSend(outbound <-chan packet, conn net.Conn) {
+	for {
+		currentSend, open := <-outbound
+
+		if !open {
+			return
+		}
+
+		bytesToSend := append([]byte{currentSend.Type}, currentSend.Content...)
+		bytesToSend = append(bytesToSend, PACKET_SEPERATOR)
+
+		_, err := conn.Write(bytesToSend)
+
+		if err != nil {
+			fmt.Printf("Error in writing to connection: %s\n", err.Error())
+			return
+		}
+	}
 }

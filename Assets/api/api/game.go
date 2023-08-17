@@ -2,16 +2,23 @@ package api
 
 import "time"
 
-const tick_frequency = 20                          //hz
-const tick_interval = time.Second / tick_frequency //some unit of time
-const tick_interval_seconds = 1 / tick_frequency   //s
+const tick_frequency = 40                          //hz
+const tick_interval = time.Second / tick_frequency //some unit of time, use tick_interval_seconds if you want the interval in a specific unit
+const tick_interval_seconds = 1.0 / tick_frequency //s
 
 const game_duration_minutes = 2                           //m
 const game_duration = time.Minute * game_duration_minutes //some unit of time
 
+const (
+	GAME_STATE_PENDING_PLAYERS = iota
+	GAME_STATE_PENDING_START
+	GAME_STATE_RUNNING
+	GAME_STATE_PENDING_DELETION
+)
+
 type Game struct {
 	Players []*Player
-	Started bool
+	State   int
 
 	Owner *Player
 
@@ -23,7 +30,7 @@ type Game struct {
 }
 
 func (g *Game) Start() {
-	g.ticker = time.NewTicker(tick_frequency)
+	g.ticker = time.NewTicker(tick_interval)
 	timer := time.NewTimer(game_duration)
 
 	go func(g *Game, timer *time.Timer) {
@@ -42,19 +49,27 @@ func (g *Game) Start() {
 	}(g, timer)
 
 	go func(g *Game) {
-		select {
-		case <-g.ticker.C:
-			{
-				g.Update(float64(tick_interval_seconds))
+		for {
+			select {
+			case <-g.ticker.C:
+				{
+					g.Update(float64(tick_interval_seconds))
+				}
+			case <-g.done:
+				{
+					return
+				}
 			}
 		}
+
 	}(g)
 }
 
 func (g *Game) Update(deltatime float64) {
 	for _, p := range g.Players {
 		if p == nil {
-			g.Started = true
+			g.State = GAME_STATE_PENDING_DELETION
+			g.done <- 0
 		}
 		p.Tick(deltatime)
 	}
