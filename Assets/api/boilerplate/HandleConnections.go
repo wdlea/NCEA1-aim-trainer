@@ -1,33 +1,28 @@
-package main
+package boilerplate
 
 import (
 	"fmt"
 	"net"
 
-	"github.com/wdlea/aimtrainerAPI/objects"
+	"github.com/wdlea/aimtrainerAPI/logic"
+	. "github.com/wdlea/aimtrainerAPI/objects"
 )
 
 const BUFFER_SIZE = 1024
 const PACKET_SEPERATOR = '\n'
-
-// packets with lowercase types are serverbound, uppercase types are client bound
-type packet struct {
-	Type    byte
-	Content []byte
-}
 
 func HandleConn(conn net.Conn) {
 	defer conn.Close()
 
 	fmt.Printf("New player connection from %s \n", conn.RemoteAddr().String())
 
-	user := new(objects.Player)
+	user := new(Player)
 	defer user.Dispose()
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
-	inboundPacketChan := make(chan packet, 8)
+	inboundPacketChan := make(chan Packet, 8)
 
-	outboundPacketChan := make(chan packet, 8)
+	outboundPacketChan := make(chan Packet, 8)
 
 	go HandleRecieve(inboundDataChan, conn)
 	go HandleBytes(inboundDataChan, inboundPacketChan)
@@ -56,7 +51,7 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 	}
 }
 
-func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
+func HandleBytes(dataChan <-chan byte, packetChan chan<- Packet) {
 	defer close(packetChan)
 
 	for {
@@ -79,14 +74,14 @@ func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
 			}
 		}
 
-		packetChan <- packet{
+		packetChan <- Packet{
 			Type:    typeByte,
 			Content: encodedPacket,
 		}
 	}
 }
 
-func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.Player) {
+func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) {
 	defer close(outbound)
 
 	for {
@@ -95,7 +90,7 @@ func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.
 			return
 		}
 
-		resps, terminate := HandlePacket(pak.Type, pak.Content, user)
+		resps, terminate := logic.HandlePacket(pak.Type, pak.Content, user)
 
 		if terminate {
 			fmt.Println("Connection terminated by client through intentional behaviour") //connection lost, but cleanly
@@ -108,7 +103,7 @@ func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.
 	}
 }
 
-func HandleSend(outbound <-chan packet, conn net.Conn) {
+func HandleSend(outbound <-chan Packet, conn net.Conn) {
 	for {
 		currentSend, open := <-outbound
 

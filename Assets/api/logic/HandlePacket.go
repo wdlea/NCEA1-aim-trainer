@@ -1,13 +1,14 @@
-package main
+package logic
 
 import (
 	"encoding/json"
 	"fmt"
 
 	"github.com/wdlea/aimtrainerAPI/objects"
+	. "github.com/wdlea/aimtrainerAPI/objects"
 )
 
-func HandlePacket(typeByte byte, marshalledPacket []byte, user *objects.Player) (response []packet, doTerminate bool) {
+func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (response []Packet, doTerminate bool) {
 	switch typeByte {
 
 	case 'f': //update position
@@ -41,7 +42,7 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *objects.Player) 
 	return
 }
 
-func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+func HandleFrame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
 	var frame objects.Frame
 	err := json.Unmarshal(pak, &frame)
 	if err != nil {
@@ -56,7 +57,7 @@ func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTermina
 		return
 	}
 
-	gamePacket := packet{
+	gamePacket := Packet{
 		Type:    'F',
 		Content: marshalledGame,
 	}
@@ -66,12 +67,12 @@ func HandleFrame(pak []byte, user *objects.Player) (response []packet, doTermina
 	return
 }
 
-func HandleCreateGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+func HandleCreateGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
 	user.HostGame()
 	return
 }
 
-func HandleJoinGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+func HandleJoinGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
 	var joinReq objects.JoinGameRequest
 
 	err := json.Unmarshal(pak, &joinReq)
@@ -82,7 +83,7 @@ func HandleJoinGame(pak []byte, user *objects.Player) (response []packet, doTerm
 	return
 }
 
-func HandleLeaveGame(pak []byte, user *objects.Player) (response []packet, doTerminate bool) {
+func HandleLeaveGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
 	user.LeaveGame()
 	return
 }
