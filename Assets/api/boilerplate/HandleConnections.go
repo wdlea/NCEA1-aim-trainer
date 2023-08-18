@@ -43,7 +43,8 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 		if err == net.ErrClosed {
 			return
 		} else if err != nil {
-			fmt.Printf("Error while recieving fron conn: %s \n", err)
+			fmt.Printf("Error while recieving fron conn: %s, closing... \n", err)
+			return
 		}
 
 		buf = buf[:n]
@@ -120,7 +121,7 @@ func HandleSend(outbound <-chan Packet, conn net.Conn) {
 		bytesToSend := append([]byte{currentSend.Type}, currentSend.Content...)
 		bytesToSend = append(bytesToSend, PACKET_SEPERATOR)
 
-		fmt.Printf("Sending %s\n", string(bytesToSend))
+		// fmt.Printf("Sending %s\n", string(bytesToSend))
 
 		_, err := conn.Write(bytesToSend)
 

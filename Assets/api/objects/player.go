@@ -19,6 +19,10 @@ type Frame struct {
 }
 
 func (p *Player) HostGame() (ok bool) {
+	fmt.Printf("Player %s attempting to host game\n", p.Name)
+
+	p.LeaveGame()
+
 	g := new(Game)
 
 	var err error
@@ -26,7 +30,7 @@ func (p *Player) HostGame() (ok bool) {
 	g.Name = RandomURLSafeString(GAME_NAME_LENGTH)
 
 	if err != nil {
-		fmt.Printf("Error in creating game token: %s", err.Error())
+		fmt.Printf("Error in creating game error: %s\n", err.Error())
 		return false
 	}
 
@@ -41,6 +45,8 @@ func (p *Player) HostGame() (ok bool) {
 }
 
 func (p *Player) JoinGame(g *Game) (ok bool) {
+	fmt.Printf("Player %s joining game %s\n", p.Name, g.Name)
+
 	p.LeaveGame()
 
 	ok = g.Players[1] == nil
@@ -50,15 +56,17 @@ func (p *Player) JoinGame(g *Game) (ok bool) {
 
 		p.Game = g
 
+		p.resetPos()
+
 		g.StartGame()
 	}
-
-	p.resetPos()
 
 	return
 }
 
 func (p *Player) LeaveGame() {
+	fmt.Printf("Player %s leaving game\n", p.Name)
+
 	if p.Game != nil {
 		p.Game.RemovePlayer(p)
 	}
@@ -66,6 +74,7 @@ func (p *Player) LeaveGame() {
 }
 
 func (p *Player) ApplyFrame(f Frame) {
+	fmt.Printf("Player %s applying frame\n", p.Name)
 	p.X, p.Y, p.Dx, p.Dy = f.X, f.Y, f.Dx, f.Dy
 }
 
@@ -75,9 +84,11 @@ func (p *Player) Update(deltaTime float32) {
 }
 
 func (p *Player) Dispose() {
+	fmt.Printf("Player %s is being disposed\n", p.Name)
 	p.LeaveGame()
 }
 
 func (p *Player) resetPos() {
+	fmt.Printf("Player %s is having thier position reset\n", p.Name)
 	p.X, p.Y, p.Dx, p.Dy = 0, 0, 0, 0
 }
