@@ -2,11 +2,19 @@ package objects
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
 )
 
 type GameState int
+
+const TICK_RATE = 40 //hz
+const TICK_INTERVAL = time.Second / TICK_RATE
+const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
+
+const GAME_DURATION = 5 * time.Minute
 
 var ActiveGames *ll.LinkedList[*Game]
 
@@ -34,12 +42,15 @@ const (
 type Game struct {
 	Players [2]*Player
 	State   GameState
-	Host    *Player //avoid circular marshal
+	// Host    *Player
 
 	ListEntry *ll.LinkedListNode[*Game] `json:"-"`
 
-	Name     string `json:"-"`
-	Password string `json:"-"`
+	Name string
+
+	DestructionLock sync.Mutex   `json:"-"`
+	Done            chan int     `json:"-"`
+	updateTicker    *time.Ticker `json:"-"`
 }
 
 func (g *Game) RemovePlayer(p *Player) {
@@ -50,17 +61,71 @@ func (g *Game) RemovePlayer(p *Player) {
 		g.Dispose() //cant keep playing with one player
 	}
 
-	if g.Players[0] == nil && g.Players[1] == nil {
+	if g.Players[0] == nil && g.Players[1] == nil { //if no players just destroy the server
 		g.Dispose()
 	}
 }
 
 func (g *Game) StartGame() {
+	g.State = GAME_RUNNING
+	timer := time.NewTimer(GAME_DURATION)
 
+	g.Done = make(chan int, 1)
+
+	go func(C <-chan time.Time, g *Game) {
+		for {
+			select {
+			case <-C:
+				g.Done <- 0
+				return
+
+			default:
+				if len(g.Done) > 0 {
+					return
+				}
+			}
+		}
+	}(timer.C, g)
+
+	g.updateTicker = time.NewTicker(TICK_INTERVAL)
+
+	go g.run()
+}
+
+func (g *Game) run() {
+	for {
+		//get lock
+		g.DestructionLock.Lock()
+		defer g.DestructionLock.Unlock()
+
+		//check if disposed
+		if g.State != GAME_RUNNING {
+			return
+		}
+
+		select {
+		case <-g.updateTicker.C: //wait for update
+			g.Update(TICK_INTERVAL_SECONDS) //this is being updated directly after, if the game is disposed between the ops this will panic, look into mutexes to stop this
+		case <-g.Done:
+			return
+		}
+
+	}
+}
+
+func (g *Game) Update(deltatime float32) {
+	for _, player := range g.Players {
+		player.Update(deltatime)
+	}
 }
 
 // remove all references of this game, resulting in the garbage collector destroying it
 func (g *Game) Dispose() {
+	g.DestructionLock.Lock()
+	defer g.DestructionLock.Unlock()
+
+	g.State = GAME_DONE
+	g.Done <- 0
 
 	for _, p := range g.Players {
 		p.Game = nil //remove all players
@@ -89,4 +154,7 @@ type JoinGameRequest struct {
 	Name string //name is used like a password and is not published in any way, rather clients must obtain this from host
 }
 
-type HostGameResponse JoinGameRequest
+type HostGameResponse struct {
+	Ok   bool
+	Name string
+}
