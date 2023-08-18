@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/wdlea/aimtrainerAPI/objects"
 	. "github.com/wdlea/aimtrainerAPI/objects"
 )
 
@@ -42,8 +41,8 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (respons
 	return
 }
 
-func HandleFrame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
-	var frame objects.Frame
+func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	var frame Frame
 	err := json.Unmarshal(pak, &frame)
 	if err != nil {
 		fmt.Printf("Unable to unmarshal message %s from user", string(pak))
@@ -80,7 +79,7 @@ func HandleFrame(pak []byte, user *objects.Player) (response []Packet, doTermina
 	return
 }
 
-func HandleCreateGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
+func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	resp := HostGameResponse{
 		Ok:   user.HostGame(),
 		Name: user.Game.Name,
@@ -107,8 +106,8 @@ func HandleCreateGame(pak []byte, user *objects.Player) (response []Packet, doTe
 	return
 }
 
-func HandleJoinGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
-	var joinReq objects.JoinGameRequest
+func HandleJoinGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	var joinReq JoinGameRequest
 
 	err := json.Unmarshal(pak, &joinReq)
 	if err != nil {
@@ -129,21 +128,34 @@ func HandleJoinGame(pak []byte, user *objects.Player) (response []Packet, doTerm
 			},
 		)
 	} else {
-		response = append(
-			response,
-			Packet{
-				Type: 'J',
-				Content: []byte(
-					"success",
-				),
-			},
-		)
+		if user.JoinGame(game.Value) {
+			response = append(
+				response,
+				Packet{
+					Type: 'J',
+					Content: []byte(
+						"success",
+					),
+				},
+			)
+		} else {
+			response = append(
+				response,
+				Packet{
+					Type: 'E',
+					Content: []byte(
+						"could not join game",
+					),
+				},
+			)
+		}
+
 	}
 
 	return
 }
 
-func HandleLeaveGame(pak []byte, user *objects.Player) (response []Packet, doTerminate bool) {
+func HandleLeaveGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	user.LeaveGame()
 	response = append(
 		response,
