@@ -1,33 +1,31 @@
-package main
+package boilerplate
 
 import (
 	"fmt"
 	"net"
 
-	"github.com/wdlea/aimtrainerAPI/objects"
+	"github.com/wdlea/aimtrainerAPI/logic"
+	. "github.com/wdlea/aimtrainerAPI/objects"
 )
 
 const BUFFER_SIZE = 1024
 const PACKET_SEPERATOR = '\n'
-
-// packets with lowercase types are serverbound, uppercase types are client bound
-type packet struct {
-	Type    byte
-	Content []byte
-}
 
 func HandleConn(conn net.Conn) {
 	defer conn.Close()
 
 	fmt.Printf("New player connection from %s \n", conn.RemoteAddr().String())
 
-	user := new(objects.Player)
+	user := new(Player)
+
+	user.Name = RandomURLSafeString(10) //random names
+
 	defer user.Dispose()
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
-	inboundPacketChan := make(chan packet, 8)
+	inboundPacketChan := make(chan Packet, 8)
 
-	outboundPacketChan := make(chan packet, 8)
+	outboundPacketChan := make(chan Packet, 8)
 
 	go HandleRecieve(inboundDataChan, conn)
 	go HandleBytes(inboundDataChan, inboundPacketChan)
@@ -45,7 +43,8 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 		if err == net.ErrClosed {
 			return
 		} else if err != nil {
-			fmt.Printf("Error while recieving fron conn: %s \n", err.Error())
+			fmt.Printf("Error while recieving fron conn: %s, closing... \n", err)
+			return
 		}
 
 		buf = buf[:n]
@@ -54,9 +53,10 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 			dataChan <- b
 		}
 	}
+
 }
 
-func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
+func HandleBytes(dataChan <-chan byte, packetChan chan<- Packet) {
 	defer close(packetChan)
 
 	for {
@@ -79,14 +79,14 @@ func HandleBytes(dataChan <-chan byte, packetChan chan<- packet) {
 			}
 		}
 
-		packetChan <- packet{
+		packetChan <- Packet{
 			Type:    typeByte,
 			Content: encodedPacket,
 		}
 	}
 }
 
-func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.Player) {
+func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) {
 	defer close(outbound)
 
 	for {
@@ -95,7 +95,7 @@ func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.
 			return
 		}
 
-		resps, terminate := HandlePacket(pak.Type, pak.Content, user)
+		resps, terminate := logic.HandlePacket(pak.Type, pak.Content, user)
 
 		if terminate {
 			fmt.Println("Connection terminated by client through intentional behaviour") //connection lost, but cleanly
@@ -106,9 +106,11 @@ func HandlePackets(inbound <-chan packet, outbound chan<- packet, user *objects.
 			outbound <- resp
 		}
 	}
+
 }
 
-func HandleSend(outbound <-chan packet, conn net.Conn) {
+func HandleSend(outbound <-chan Packet, conn net.Conn) {
+	defer fmt.Println("Conn closed")
 	for {
 		currentSend, open := <-outbound
 
@@ -118,6 +120,8 @@ func HandleSend(outbound <-chan packet, conn net.Conn) {
 
 		bytesToSend := append([]byte{currentSend.Type}, currentSend.Content...)
 		bytesToSend = append(bytesToSend, PACKET_SEPERATOR)
+
+		// fmt.Printf("Sending %s\n", string(bytesToSend))
 
 		_, err := conn.Write(bytesToSend)
 
