@@ -7,7 +7,7 @@ import (
 const GAME_NAME_LENGTH = 8
 
 type Player struct {
-	Name string `json:"name"`
+	Name string
 
 	Game *Game `json:"-"` //avoid circular marshal
 
@@ -49,6 +49,8 @@ func (p *Player) JoinGame(g *Game) (ok bool) {
 		g.Players[1] = p
 
 		p.Game = g
+
+		g.StartGame()
 	}
 
 	p.resetPos()

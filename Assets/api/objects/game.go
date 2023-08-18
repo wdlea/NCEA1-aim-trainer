@@ -2,11 +2,18 @@ package objects
 
 import (
 	"fmt"
+	"time"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
 )
 
 type GameState int
+
+const TICK_RATE = 40 //hz
+const TICK_INTERVAL = time.Second / TICK_RATE
+const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
+
+const GAME_DURATION = 5 * time.Minute
 
 var ActiveGames *ll.LinkedList[*Game]
 
@@ -39,6 +46,9 @@ type Game struct {
 	ListEntry *ll.LinkedListNode[*Game] `json:"-"`
 
 	Name string
+
+	Done         chan int     `json:"-"`
+	updateTicker *time.Ticker `json:"-"`
 }
 
 func (g *Game) RemovePlayer(p *Player) {
@@ -49,17 +59,51 @@ func (g *Game) RemovePlayer(p *Player) {
 		g.Dispose() //cant keep playing with one player
 	}
 
-	if g.Players[0] == nil && g.Players[1] == nil {
+	if g.Players[0] == nil && g.Players[1] == nil { //if no players just destroy the server
 		g.Dispose()
 	}
 }
 
 func (g *Game) StartGame() {
+	g.State = GAME_RUNNING
+	timer := time.NewTimer(GAME_DURATION)
+	go func(C <-chan time.Time, g *Game) {
+		for {
+			select {
+			case <-C:
+				g.Done <- 0
+				return
 
+			default:
+				if len(g.Done) > 0 {
+					return
+				}
+			}
+		}
+	}(timer.C, g)
+
+	g.updateTicker = time.NewTicker(TICK_INTERVAL)
+
+	go g.run()
+}
+
+func (g *Game) run() {
+	for g.State == GAME_RUNNING {
+		<-g.updateTicker.C //wait for update
+		g.Update(TICK_INTERVAL_SECONDS)
+	}
+}
+
+func (g *Game) Update(deltatime float32) {
+	for _, player := range g.Players {
+		player.Update(deltatime)
+	}
 }
 
 // remove all references of this game, resulting in the garbage collector destroying it
 func (g *Game) Dispose() {
+
+	g.State = GAME_DONE
 
 	for _, p := range g.Players {
 		p.Game = nil //remove all players
@@ -89,6 +133,6 @@ type JoinGameRequest struct {
 }
 
 type HostGameResponse struct {
-	Ok  bool
+	Ok   bool
 	Name string
 }

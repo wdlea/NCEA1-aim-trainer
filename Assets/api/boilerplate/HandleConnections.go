@@ -17,6 +17,9 @@ func HandleConn(conn net.Conn) {
 	fmt.Printf("New player connection from %s \n", conn.RemoteAddr().String())
 
 	user := new(Player)
+
+	user.Name = RandomURLSafeString(10) //random names
+
 	defer user.Dispose()
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
