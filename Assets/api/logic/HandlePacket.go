@@ -113,6 +113,7 @@ func HandleJoinGame(pak []byte, user *objects.Player) (response []Packet, doTerm
 	err := json.Unmarshal(pak, &joinReq)
 	if err != nil {
 		fmt.Printf("Error: %s while unmarshaling %s", err.Error(), string(pak))
+		return
 	}
 
 	game := FindGame(joinReq.Name)

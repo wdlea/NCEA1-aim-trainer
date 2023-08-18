@@ -88,7 +88,7 @@ type JoinGameRequest struct {
 	Name string //name is used like a password and is not published in any way, rather clients must obtain this from host
 }
 
-type HostGameResponse {
+type HostGameResponse struct {
 	Ok  bool
 	Name string
 }
