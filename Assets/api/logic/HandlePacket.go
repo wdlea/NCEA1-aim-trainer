@@ -50,21 +50,35 @@ func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool)
 	}
 
 	if user.Game != nil {
-		user.ApplyFrame(frame)
 
-		marshalledGame, err := json.Marshal(&user.Game)
-		if err != nil {
-			fmt.Printf("Error while marshaling game: %s\n", err.Error())
-			return
+		if user.Game.State == GAME_RUNNING {
+			user.ApplyFrame(frame)
+
+			marshalledGame, err := json.Marshal(&user.Game)
+			if err != nil {
+				fmt.Printf("Error while marshaling game: %s\n", err.Error())
+				return
+			}
+
+			response = append(
+				response,
+				Packet{
+					Type:    'F',
+					Content: marshalledGame,
+				},
+			)
+		} else {
+			response = append(
+				response,
+				Packet{
+					Type: 'E', //error packet
+					Content: []byte(
+						"Game not started yet",
+					),
+				},
+			)
 		}
 
-		response = append(
-			response,
-			Packet{
-				Type:    'F',
-				Content: marshalledGame,
-			},
-		)
 	} else {
 		response = append(
 			response,
