@@ -12,7 +12,7 @@ namespace api
         private static Socket communicationSocket;
 
         private static EndPoint serverEndpoint;
-        public static EndPoint ServerEndpoint
+        internal static EndPoint ServerEndpoint
         {
             get => serverEndpoint;
             set
@@ -28,12 +28,10 @@ namespace api
 
         static Client()
         {
-            serverEndpoint = new IPEndPoint(IPAddress.Loopback, 80);//default to localhost:80, which I probably should change
-
             RegenerateSocket();
         }
 
-        public static bool Connect()
+        private static bool Connect()
         {
             try
             {
@@ -48,7 +46,7 @@ namespace api
             
         }
 
-        public static bool Disconnect()
+        private static bool Disconnect()
         {
             try//try do clean way first and disconnect
             {
