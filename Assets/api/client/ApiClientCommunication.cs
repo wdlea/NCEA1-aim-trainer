@@ -9,7 +9,7 @@ namespace api
 {
     public static partial class Client
     {
-        const byte END_OF_PACKET = (byte)'\n'; 
+        const byte END_OF_PACKET = (byte)'\n';
         const int BUFFER_SIZE = 1024;
         const int MAX_PACKET_LENGTH = 512;
 
@@ -60,15 +60,15 @@ namespace api
 
             while (Connected)
             {
-                if(communicationSocket.Available > 0)
+                if (communicationSocket.Available > 0)
                 {
                     byte[] buf = new byte[BUFFER_SIZE];
                     int n = communicationSocket.Receive(buf);
                     buf = buf[..n];
-                    
-                    foreach(byte b in buf)
+
+                    foreach (byte b in buf)
                     {
-                        if(b == END_OF_PACKET)
+                        if (b == END_OF_PACKET)
                         {
                             recievedPackets.Enqueue(
                                 new Packet(currentPacket.ToArray())
@@ -78,7 +78,7 @@ namespace api
                         else
                         {
                             currentPacket.Add(b);
-                            if(currentPacket.Count > MAX_PACKET_LENGTH)
+                            if (currentPacket.Count > MAX_PACKET_LENGTH)
                             {
                                 throw new OversizedPacketException();
                             }
@@ -98,7 +98,7 @@ namespace api
         {
             while (Connected)
             {
-                if(sendQueue.TryDequeue(out TransmittingPacket toSend))
+                if (sendQueue.TryDequeue(out TransmittingPacket toSend))
                 {
                     Send(toSend.packet);
                     recieveClaims.Enqueue(toSend.ticket);
@@ -116,7 +116,7 @@ namespace api
         {
             while (Connected)
             {
-                if(recieveClaims.TryDequeue(out ClaimTicket ticket))
+                if (recieveClaims.TryDequeue(out ClaimTicket ticket))
                 {
                     Packet claimedPacket = default;
                     do
@@ -202,8 +202,9 @@ namespace api
         }
 
         public Packet(byte[] packet) : this(
-            (PacketType)(char)packet[0], 
-            Encoding.Unicode.GetString(packet[1..])) { }
+            (PacketType)(char)packet[0],
+            Encoding.Unicode.GetString(packet[1..]))
+        { }
 
         public static Packet FromObject(PacketType type, object message)
         {
@@ -213,7 +214,7 @@ namespace api
         public byte[] ToBytes()
         {
             byte[] encodedType = Encoding.Unicode.GetBytes(
-                    new [] {(char)type}
+                    new[] { (char)type }
             );
 
             byte[] encodedMessage = Encoding.Unicode.GetBytes(
@@ -233,5 +234,5 @@ namespace api
         {
             return !(left == right);
         }
-    }   
+    }
 }
