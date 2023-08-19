@@ -14,7 +14,8 @@ namespace api
         const int MAX_PACKET_LENGTH = 512;
 
         internal static Queue<Packet> recievedPackets = new Queue<Packet>();
-        internal static Queue<Packet> sendQueue = new Queue<Packet>();
+        internal static Queue<TransmittingPacket> sendQueue = new Queue<TransmittingPacket>();
+        internal static Queue<ClaimTicket> recieveClaims = new Queue<ClaimTicket>();
 
         public delegate void KillCoroutines();
         internal static KillCoroutines killCoroutines = null;
@@ -27,18 +28,25 @@ namespace api
         /// servers.
         /// </summary>
         /// <param name="surrogate">The gameobject to spawn the coroutines on.</param>
-        public static void SpawnCoroutines(MonoBehaviour surrogate)
+        internal static void SpawnCoroutines(MonoBehaviour surrogate)
         {
+            if (surrogate == null) return;//if the surrogate has been destroyed, i can't spawn any coroutines
+
             killCoroutines?.Invoke();
 
             Coroutine recv = surrogate.StartCoroutine(RecievePacketsCoroutine());
             Coroutine send = surrogate.StartCoroutine(SendPacketsCoroutine());
+            Coroutine claim = surrogate.StartCoroutine(HandleClaimsCoroutine());
 
             killCoroutines = () =>
             {
+                killCoroutines = null;//this can only be run once
+
+                if (surrogate == null) return;//if the surrogate has been destroyed, so will the coroutines
+
                 surrogate.StopCoroutine(recv);
                 surrogate.StopCoroutine(send);
-                killCoroutines = null;
+                surrogate.StopCoroutine(claim);
             };
         }
 
@@ -46,7 +54,7 @@ namespace api
         /// Handles the recieving of packets from the server. This will be executed in the game via a "surrogate" gameobject.
         /// </summary>
         /// <returns>The coroutine</returns>
-        internal static IEnumerator RecievePacketsCoroutine()
+        private static IEnumerator RecievePacketsCoroutine()
         {
             List<byte> currentPacket = new List<byte>(MAX_PACKET_LENGTH);
 
@@ -86,13 +94,43 @@ namespace api
         /// Handles the sending of packets to the server. This will be executed in the game via a "surrogate" gameobject.
         /// </summary>
         /// <returns></returns>
-        internal static IEnumerator SendPacketsCoroutine()
+        private static IEnumerator SendPacketsCoroutine()
         {
             while (Connected)
             {
-                if(recievedPackets.TryDequeue(out Packet toSend))
+                if(sendQueue.TryDequeue(out TransmittingPacket toSend))
                 {
-                    Send(toSend);
+                    Send(toSend.packet);
+                    recieveClaims.Enqueue(toSend.ticket);
+                }
+
+                yield return null;
+            }
+        }
+
+        /// <summary>
+        /// Handles the claims of packets from the recieve queues. This will be executed in the game via a "surrogate" gameobject.
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerator HandleClaimsCoroutine()
+        {
+            while (Connected)
+            {
+                if(recieveClaims.TryDequeue(out ClaimTicket ticket))
+                {
+                    Packet claimedPacket = default;
+                    do
+                    {
+                        claimedPacket = (
+                            from Packet packet in recievedPackets
+                            where packet.type == ticket.expectedType || packet.type == PacketType.Error
+                            select packet
+                        ).First();
+
+                        yield return null;
+                    } while (claimedPacket == default);
+
+                    ticket.onResponse(claimedPacket);
                 }
 
                 yield return null;
@@ -104,14 +142,27 @@ namespace api
         /// instead add the packet to the sendQueue.
         /// </summary>
         /// <param name="packet"></param>
-        internal static void Send(Packet packet)
+        private static void Send(Packet packet)
         {
             communicationSocket.Send(packet.ToBytes());
             communicationSocket.Send(new[] { END_OF_PACKET });
         }
     }
 
-    internal enum PacketType
+    public delegate void OnResponse(Packet response);
+    internal struct TransmittingPacket
+    {
+        public Packet packet;
+        public ClaimTicket ticket;
+    }
+
+    public struct ClaimTicket
+    {
+        public OnResponse onResponse;
+        public PacketType expectedType;
+    }
+
+    public enum PacketType
     {
         Error = 'E',
 
@@ -122,12 +173,11 @@ namespace api
     }
 
     [Serializable]
-    internal struct Packet
+    public struct Packet
     {
         public readonly PacketType type;
 
         public readonly string message;
-
 
         public Packet(PacketType type, string message)
         {
@@ -156,6 +206,16 @@ namespace api
 
 
             return encodedType.Concat(encodedMessage).ToArray();
+        }
+
+
+        public static bool operator ==(Packet left, Packet right)
+        {
+            return (left.message == right.message) && (left.type == right.type);
+        }
+        public static bool operator !=(Packet left, Packet right)
+        {
+            return !(left == right);
         }
     }   
 }
