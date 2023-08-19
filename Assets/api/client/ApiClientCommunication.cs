@@ -150,18 +150,30 @@ namespace api
     }
 
     public delegate void OnResponse(Packet response);
+
+    /// <summary>
+    /// A packet in the send queue, contains
+    /// a packet and ticket.
+    /// </summary>
     internal struct TransmittingPacket
     {
         public Packet packet;
         public ClaimTicket ticket;
     }
 
+    /// <summary>
+    /// A ticket that instructs the client what 
+    /// to do with the response it gets.
+    /// </summary>
     public struct ClaimTicket
     {
         public OnResponse onResponse;
         public PacketType expectedType;
     }
 
+    /// <summary>
+    /// The type of packet.
+    /// </summary>
     public enum PacketType
     {
         Error = 'E',
@@ -172,6 +184,10 @@ namespace api
 
     }
 
+    /// <summary>
+    /// A packet is a single "unit"
+    /// that gets sent to the server.
+    /// </summary>
     [Serializable]
     public struct Packet
     {

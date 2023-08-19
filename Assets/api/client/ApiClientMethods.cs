@@ -8,6 +8,11 @@ namespace api
         const string SERVER_ADDR = "127.0.0.1";
         const int SERVER_PORT = 80;
 
+        /// <summary>
+        /// Enqueues a packet to be sent.
+        /// </summary>
+        /// <param name="packet">The packet that will be sent.</param>
+        /// <param name="ticket">The ticket to handle the response packet.</param>
         public static void EnqueueSend(Packet packet, ClaimTicket ticket)
         {
             sendQueue.Enqueue(
@@ -19,6 +24,14 @@ namespace api
             );
         }
 
+        /// <summary>
+        /// Joins a server.
+        /// </summary>
+        /// <param name="surrogate">
+        /// A surrogate MonoBehaviour(can literally be 
+        /// anything as long as it doesnt get 
+        /// destroyed when the server is running) 
+        /// to use for spawning coroutines.</param>
         public static void JoinServer(MonoBehaviour surrogate)
         {
             
