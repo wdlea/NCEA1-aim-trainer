@@ -8,6 +8,18 @@ import (
 )
 
 func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	if len(user.Name) <= 0 {
+		response = append(
+			response,
+			Packet{
+				Type: 'E',
+				Content: []byte(
+					"Cannot create a game without having a name.",
+				),
+			},
+		)
+	}
+
 	resp := HostGameResponse{
 		Ok:   user.HostGame(),
 		Name: user.Game.Name,
