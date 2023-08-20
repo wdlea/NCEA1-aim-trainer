@@ -1,4 +1,2 @@
-github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
-github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/wdlea/GOGenericLinkedList v0.0.0-20230816220718-058b9a0bca40 h1:m4iz34JXlsuZVBBKk/qPrcRXtIOpKVLJ2iOoZhcIX2g=
 github.com/wdlea/GOGenericLinkedList v0.0.0-20230816220718-058b9a0bca40/go.mod h1:k7FJcJWiyYI8dquPtJr92J2GxcwpfouBKzpACtEb1eA=
