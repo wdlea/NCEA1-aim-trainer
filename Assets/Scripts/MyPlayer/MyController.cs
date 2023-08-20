@@ -2,17 +2,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class MyController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public float X, Y, Dx, Dy;
+
+    public api.objects.Frame Frame
     {
-        
+        get => new api.objects.Frame { X = X, Y = Y, Dx = Dx, Dy = Dy };
+        set
+        {
+            X = value.X;
+            Y = value.Y;
+            Dx = value.Dx;
+            Dy = value.Dy;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
+    {
+        StartCoroutine(UpdateDeltaPos());
+    }
+
+    private void Update()
     {
         
+
+        X = Input.mousePosition.x;
+        Y = Input.mousePosition.y;
+
+        transform.position = new Vector3(X, Y, 0);
+    }
+
+    private IEnumerator UpdateDeltaPos()
+    {
+        while(true){
+            float pX = X;
+            float pY = Y;
+
+            yield return new WaitForSeconds(1 / 5);//1hz
+
+            Dx = (X - pX) / Time.deltaTime;
+            Dy = (Y - pY) / Time.deltaTime;
+        }
     }
 }
