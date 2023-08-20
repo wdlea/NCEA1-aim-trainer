@@ -15,6 +15,19 @@ public class PlayerManager : MonoBehaviour
         api.Client.JoinServer(this);
     }
 
+    private string myName;
+    public string MyName
+    {
+        get => myName;
+        set
+        {
+            api.Client.EnqueueSend(
+                new api.Packet(
+                    )
+            );
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
