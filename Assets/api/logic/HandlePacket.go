@@ -191,6 +191,19 @@ func HandleLeaveGame(pak []byte, user *Player) (response []Packet, doTerminate b
 const MAX_NAME_LENGTH int = 15
 
 func HandleSetName(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	if user.Game != nil {
+		response = append(
+			response,
+			Packet{
+				Type: 'E',
+				Content: []byte(
+					"You cannot change your name mid game.",
+				),
+			},
+		)
+		return
+	}
+
 	if len(pak) > 0 && len(pak) < MAX_NAME_LENGTH {
 		user.Name = string(pak)
 
