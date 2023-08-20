@@ -128,6 +128,19 @@ func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate 
 func HandleJoinGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	var joinReq JoinGameRequest
 
+	if len(user.Name) <= 0 {
+		response = append(
+			response,
+			Packet{
+				Type: 'E', //error packet
+				Content: []byte(
+					"Cannot join a game when you do not have a name.",
+				),
+			},
+		)
+		return
+	}
+
 	err := json.Unmarshal(pak, &joinReq)
 	if err != nil {
 		fmt.Printf("Error: %s while unmarshaling %s", err.Error(), string(pak))
