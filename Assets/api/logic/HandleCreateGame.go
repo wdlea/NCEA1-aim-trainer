@@ -18,6 +18,7 @@ func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate 
 				),
 			},
 		)
+		return
 	}
 
 	resp := HostGameResponse{
