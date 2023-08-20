@@ -31,6 +31,10 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (respons
 			doTerminate = true
 			return
 		}
+	case 'n': //set name
+		{
+			return HandleSetName(marshalledPacket, user)
+		}
 	default:
 		{
 			fmt.Printf("Invalid packet type requested: %s, terminating connection\n", string(typeByte))
@@ -181,5 +185,33 @@ func HandleLeaveGame(pak []byte, user *Player) (response []Packet, doTerminate b
 			),
 		},
 	)
+	return
+}
+
+const MAX_NAME_LENGTH int = 15
+
+func HandleSetName(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	if len(pak) > 0 && len(pak) < MAX_NAME_LENGTH {
+		user.Name = string(pak)
+
+		response = append(
+			response,
+			Packet{
+				Type:    'N',
+				Content: pak,
+			},
+		)
+	} else {
+		response = append(
+			response,
+			Packet{
+				Type: 'E',
+				Content: []byte(
+					"Name was either not long enough, too long, or contained banned characters.",
+				),
+			},
+		)
+	}
+
 	return
 }
