@@ -18,8 +18,6 @@ func HandleConn(conn net.Conn) {
 
 	user := new(Player)
 
-	user.Name = RandomURLSafeString(10) //random names
-
 	defer user.Dispose()
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
