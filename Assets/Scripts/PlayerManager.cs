@@ -4,15 +4,17 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
-    string MyName = "drippy placeholder name";
+    [SerializeField] private MyController me;
+    private Dictionary<string, OtherPlayer> others;
 
-    MyController me;
-    Dictionary<string, OtherPlayer> others;
+    [SerializeField] private OtherPlayer otherPrefab;
+    [SerializeField] private Transform gameParent;
 
     // Use this for initialization
     void Start()
     {
         api.Client.JoinServer(this);
+        MyName = Random.Range(0, 10000).ToString();
     }
 
     private string myName;
@@ -23,9 +25,26 @@ public class PlayerManager : MonoBehaviour
         {
             api.Client.EnqueueSend(
                 new api.Packet(
-                    api.
-                    )
+                    api.PacketType.ServerBoundName,
+                    value
+                ),
+                new api.ClaimTicket
+                {
+                    onResponse= OnNameResp,
+                    expectedType=api.PacketType.ClientBoundNameResponse
+                }
             );
+        }
+    }
+    private void OnNameResp(api.Packet p)
+    {
+        if(p.type == api.PacketType.ClientBoundNameResponse)
+        {
+            myName = p.message;
+        }
+        else
+        {
+            throw new api.UnexpectedPacketException();
         }
     }
 
@@ -79,6 +98,10 @@ public class PlayerManager : MonoBehaviour
             }
             else
             {
+                if(!others.ContainsKey(player.Name)){
+                    others.Add(player.Name, Instantiate(otherPrefab, gameParent));
+                }
+
                 others[player.Name].Frame = player;
             }
         }

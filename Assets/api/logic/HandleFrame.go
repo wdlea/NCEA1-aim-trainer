@@ -11,7 +11,7 @@ func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool)
 	var frame Frame
 	err := json.Unmarshal(pak, &frame)
 	if err != nil {
-		fmt.Printf("Unable to unmarshal message %s from user", string(pak))
+		fmt.Printf("Unable to unmarshal message %s from user %s with error %s\n", string(pak), string(user.Name), err.Error())
 		return
 	}
 

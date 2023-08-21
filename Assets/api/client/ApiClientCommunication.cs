@@ -70,9 +70,11 @@ namespace api
                     {
                         if (b == END_OF_PACKET)
                         {
-                            recievedPackets.Enqueue(
-                                new Packet(currentPacket.ToArray())
-                            );
+                            Packet recieved = new Packet(currentPacket.ToArray());
+
+                            Debug.Log("Recieved Packet" + recieved.ToString());
+
+                            recievedPackets.Enqueue(recieved);
                             currentPacket.Clear();
                         }
                         else
@@ -121,11 +123,14 @@ namespace api
                     Packet claimedPacket = default;
                     do
                     {
-                        claimedPacket = (
-                            from Packet packet in recievedPackets
-                            where packet.type == ticket.expectedType || packet.type == PacketType.Error
-                            select packet
-                        ).First();
+                        if (recievedPackets.Count > 0)
+                        {
+                            claimedPacket = (
+                                from Packet packet in recievedPackets
+                                where packet.type == ticket.expectedType || packet.type == PacketType.Error
+                                select packet
+                            ).FirstOrDefault();
+                        }
 
                         yield return null;
                     } while (claimedPacket == default);
@@ -181,7 +186,16 @@ namespace api
         ServerBoundFrame = 'f',
         ClientBoundFrameResponse = 'F',
 
+        ServerBoundName = 'n',
+        ClientBoundNameResponse = 'N',
 
+        ServerBoundJoin = 'j',
+        ClientBoundJoinResponse = 'J',
+
+        ServerBoundLeave = 'l',
+        ClientBoundLeaveResponse = 'L',
+
+        ServerBoundTerminate = 't',
     }
 
     /// <summary>
@@ -203,7 +217,7 @@ namespace api
 
         public Packet(byte[] packet) : this(
             (PacketType)(char)packet[0],
-            Encoding.Unicode.GetString(packet[1..]))
+            Encoding.ASCII.GetString(packet[1..]))
         { }
 
         public static Packet FromObject(PacketType type, object message)
@@ -213,11 +227,11 @@ namespace api
 
         public byte[] ToBytes()
         {
-            byte[] encodedType = Encoding.Unicode.GetBytes(
+            byte[] encodedType = Encoding.ASCII.GetBytes(
                     new[] { (char)type }
             );
 
-            byte[] encodedMessage = Encoding.Unicode.GetBytes(
+            byte[] encodedMessage = Encoding.ASCII.GetBytes(
                     message
             );
 
