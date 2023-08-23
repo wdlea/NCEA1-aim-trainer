@@ -10,6 +10,19 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private OtherPlayer otherPrefab;
     [SerializeField] private Transform gameParent;
 
+    [System.NonSerialized] public bool inGame = false;
+
+    public static PlayerManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if(Instance != null)
+        {
+            Debug.LogWarning("More than 1 instance of PlayerManager in game");
+        }
+        Instance = this;
+    }
+
     // Use this for initialization
     void Start()
     {
@@ -36,6 +49,7 @@ public class PlayerManager : MonoBehaviour
             );
         }
     }
+
     private void OnNameResp(api.Packet p)
     {
         if(p.type == api.PacketType.ClientBoundNameResponse)
@@ -51,14 +65,18 @@ public class PlayerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        api.Client.EnqueueSend(
-            api.Packet.FromObject(api.PacketType.ServerBoundFrame, me.Frame),
-            new api.ClaimTicket
-            {
-                onResponse= OnResponse,
-                expectedType=api.PacketType.ClientBoundFrameResponse
-            }
-        );
+        if (inGame)
+        {
+            api.Client.EnqueueSend(
+               api.Packet.FromObject(api.PacketType.ServerBoundFrame, me.Frame),
+               new api.ClaimTicket
+               {
+                   onResponse = OnResponse,
+                   expectedType = api.PacketType.ClientBoundFrameResponse
+               }
+           );
+        }
+       
     }
 
     private void OnResponse(api.Packet p)
