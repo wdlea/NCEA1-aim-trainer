@@ -212,6 +212,9 @@ namespace api
         ServerBoundLeave = 'l',
         ClientBoundLeaveResponse = 'L',
 
+        ServerBoundCreate = 'c',
+        ClientBoundCreateResponse = 'C',
+
         ServerBoundTerminate = 't',
     }
 
