@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using api;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -36,7 +37,7 @@ public class PlayerManager : MonoBehaviour
         get => myName;
         set
         {
-            api.Client.EnqueueSend(
+            Client.EnqueueSend(
                 new api.Packet(
                     api.PacketType.ServerBoundName,
                     value

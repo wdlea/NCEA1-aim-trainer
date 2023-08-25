@@ -32,7 +32,7 @@ namespace api
         /// <param name="surrogate">The monobehaviour to spawn the coroutine on
         /// to allow it to interact with the game thread.</param>
         /// </summary>
-        protected static void StartThreads(MonoBehaviour surrogate)
+        private static void StartThreads(MonoBehaviour surrogate)
         {
             killCoroutines?.Invoke();
 
