@@ -1,7 +1,10 @@
 ﻿using api;
+using api.objects;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+#nullable enable
 
 public class PlayerManager : MonoBehaviour
 {
@@ -31,23 +34,15 @@ public class PlayerManager : MonoBehaviour
         MyName = Random.Range(0, 10000).ToString();
     }
 
-    private string myName;
+    Promise<string>? namePromise;
+
+    private string myName = "";
     public string MyName
     {
         get => myName;
         set
         {
-            Client.EnqueueSend(
-                new api.Packet(
-                    api.PacketType.ServerBoundName,
-                    value
-                ),
-                new api.ClaimTicket
-                {
-                    onResponse= OnNameResp,
-                    expectedType=api.PacketType.ClientBoundNameResponse
-                }
-            );
+            namePromise = Methods.SetName(value);
         }
     }
 
@@ -63,53 +58,47 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    Promise<Game>? gamePromise;
+
     // Update is called once per frame
     void Update()
     {
         if (inGame)
         {
-            api.Client.EnqueueSend(
-               api.Packet.FromObject(api.PacketType.ServerBoundFrame, me.Frame),
-               new api.ClaimTicket
-               {
-                   onResponse = OnResponse,
-                   expectedType = api.PacketType.ClientBoundFrameResponse
-               }
-           );
-        }
-       
-    }
+            if (gamePromise == null)
+            {
+                gamePromise = Methods.SendFrame(me.Frame);
+            }
+            else
+            {
+                if (gamePromise.Finished)
+                {
+                    if (gamePromise.Get(out Game game) is null)
+                    {
+                        ApplyGame(game);
+                        gamePromise = null;
+                    }
+                    else
+                        Debug.Log("Error recieving game");
+                }
+            }
 
-    private void OnResponse(api.Packet p)
-    {
-        switch (p.type)
+            
+        }
+        if(namePromise != null && namePromise.Finished)
         {
-            case api.PacketType.ClientBoundFrameResponse:
-                {
-                    //do normal things
-                    ApplyPacket(p);
-                    break;
-                }
-            case api.PacketType.Error:
-                {
-                    //handle error
-                    Debug.Log("An error packet was recieved: " + p.message);
-                    break;
-                }
-            default:
-                {
-                    throw new api.UnexpectedPacketException();
-                }
+            if (namePromise.Get(out string? newName) != null)
+            {
+                myName = newName ?? myName;
+                namePromise = null;
+            }
+            else Debug.Log("error getting name");
         }
     }
 
-    private void ApplyPacket(api.Packet p)
+    private void ApplyGame(Game game)
     {
-        //p WILL have the correct type because of the above function
-
-        api.objects.Game game = JsonUtility.FromJson<api.objects.Game>(p.message);
-
-        foreach(api.objects.Player player in game.Players)
+        foreach(Player player in game.Players)
         {
             if(player.Name == MyName)
             {
