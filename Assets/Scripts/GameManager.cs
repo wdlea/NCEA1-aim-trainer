@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
 
     Promise<Game>? gamePromise;
 
-    string myName;
+    public static string myName = "";//todo, keep track of this in methods instead of here
 
     private void Update()
     {
@@ -33,7 +33,6 @@ public class GameManager : MonoBehaviour
             gamePromise = null;
         }
     }
-
 
     void ApplyGame(Game game)
     {
