@@ -151,6 +151,7 @@ namespace api
 
                     ticket.onResponse(claimedPacket);
                 }
+                else yield return null;
             }
         }
 
