@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace api
 {
@@ -17,6 +18,7 @@ namespace api
         /// <returns>A promise resolving to the set name</returns>
         public static Promise<string> SetName(string name)
         {
+            Debug.Log("Setting name");
             Promise<string> promise = new Promise<string>();
 
             Packet packet = new Packet(PacketType.ServerBoundName, name);
@@ -36,6 +38,8 @@ namespace api
                     }
                 }
             };
+
+            Client.EnqueueSend(packet, ticket);
 
             return promise;
         }

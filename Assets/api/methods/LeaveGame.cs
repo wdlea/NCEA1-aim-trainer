@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace api { 
     public static partial class Methods
     {
@@ -8,6 +10,7 @@ namespace api {
         /// <returns>A promise resolving to true when the game has been left</returns>
         public static Promise<bool> LeaveGame()
         {
+            Debug.Log("Leaving Game");
             Promise<bool> promise = new();
 
             Packet packet = new(PacketType.ServerBoundLeave, "");
@@ -27,6 +30,8 @@ namespace api {
                       }
                   }
             };
+
+            Client.EnqueueSend(packet, ticket);
             return promise;
         }
     }

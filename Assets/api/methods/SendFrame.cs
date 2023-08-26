@@ -13,6 +13,7 @@ namespace api
         /// <returns>A promise that resolves to the game state</returns>
         public static Promise<Game> SendFrame(Frame frame)
         {
+            Debug.Log("Sending frame");
             Promise<objects.Game> promise = new Promise<Game>();
 
             Packet packet = Packet.FromObject(PacketType.ServerBoundFrame, frame);
@@ -39,6 +40,8 @@ namespace api
                     }
                 }
             };
+
+            Client.EnqueueSend(packet, ticket);
             return promise;
         }
     }
