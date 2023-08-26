@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 #nullable enable
@@ -18,12 +19,22 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private InputField nameInput;
     [SerializeField] private InputField codeInput;
 
-    public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected;
+    [SerializeField] private Button joinButton;
+    [SerializeField] private Button hostButton;
 
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] private Indicator nameIndicator;
+
+
+    [SerializeField] private int gameBuildIndex;
+
+    public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
+    static bool namePending = false;
+
+    private void Start()
     {
-        DontDestroyOnLoad(surrogate);
+        nameInput.onEndEdit.AddListener(ApplyName);
+        joinButton.onClick.AddListener(JoinGame);
+        hostButton.onClick.AddListener(HostGame);
     }
 
     // Update is called once per frame
@@ -40,7 +51,12 @@ public class MenuManager : MonoBehaviour
             {
                 throw e;
             }
-            else if(playerName is not null) GameManager.myName = playerName;
+            else if (playerName is not null)
+            {
+                GameManager.myName = playerName;
+                nameIndicator.State = Indicator.IndicatorState.Completed;
+            }
+            namePending = false;
         }
 
         if(joinPromise != null && joinPromise.Finished)
@@ -51,7 +67,7 @@ public class MenuManager : MonoBehaviour
             }
             else if(success)
             {
-                //do shit
+                SceneManager.LoadScene(gameBuildIndex);
             }
             else
             {
@@ -67,7 +83,8 @@ public class MenuManager : MonoBehaviour
             }
             else if(code is not null)
             {
-                //do shit
+                SceneManager.LoadScene(gameBuildIndex);
+                Debug.Log(code);
             }
             else
             {
@@ -76,9 +93,11 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public void ApplyName()
+    public void ApplyName(string name)
     {
-        namePromise = Methods.SetName(nameInput.text);
+        namePromise = Methods.SetName(name);
+        nameIndicator.State = Indicator.IndicatorState.Pending;
+        namePending = true;
     }
     public void JoinGame()
     {
