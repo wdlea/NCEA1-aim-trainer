@@ -71,7 +71,7 @@ namespace api
         {
             List<byte> currentPacket = new List<byte>(MAX_PACKET_LENGTH);
 
-            while (Connected)
+            while (IsConnected)
             {
                 if (communicationSocket.Available > 0)
                 {
@@ -110,7 +110,7 @@ namespace api
         /// </summary>
         private static void SendPacketsThread()
         {
-            while (Connected)
+            while (IsConnected)
             {
                 if (sendQueue.TryDequeue(out TransmittingPacket toSend))
                 {
@@ -127,7 +127,7 @@ namespace api
         /// </summary>
         private static IEnumerator HandleClaimsCoroutine()
         {
-            while (Connected)
+            while (IsConnected)
             {
                 if (recieveClaims.TryDequeue(out ClaimTicket ticket))
                 {

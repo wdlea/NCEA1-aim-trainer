@@ -9,8 +9,6 @@ namespace api
         const string SERVER_ADDR = "127.0.0.1";
         const int SERVER_PORT = 80;
 
-
-
         /// <summary>
         /// Enqueues a packet to be sent.
         /// </summary>
@@ -37,7 +35,6 @@ namespace api
         /// to use for spawning coroutines.</param>
         public static void JoinServer(MonoBehaviour surrogate)
         {
-            
             ServerEndpoint = new IPEndPoint(IPAddress.Parse(SERVER_ADDR), SERVER_PORT);
             StartThreads(surrogate);
         }
