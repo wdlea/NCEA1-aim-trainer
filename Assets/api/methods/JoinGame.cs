@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace api {
     public static partial class Methods
     {
@@ -8,6 +10,7 @@ namespace api {
         /// <returns>A promise, will resolve to true if it was sucessful.</returns>
         public static Promise<bool> JoinGame(string code)
         {
+            Debug.Log("joining Game");
             Promise<bool> promise = new Promise<bool>();
 
             Packet packet = new Packet(PacketType.ServerBoundJoin, code);

@@ -13,6 +13,8 @@ namespace api
         /// <returns>A promise resolving to the game code</returns>
         public static Promise<string> CreateGame()
         {
+            Debug.Log("Creating Game");
+
             Promise<string> promise = new Promise<string>();
 
             Packet packet = new(PacketType.ServerBoundCreate, "");
