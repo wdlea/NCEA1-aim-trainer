@@ -10,7 +10,7 @@ namespace api
     [Serializable]
     public static partial class Client
     {
-        public static bool Connected => communicationSocket.Connected;
+        public static bool IsConnected => communicationSocket.Connected;
 
         private static Socket communicationSocket;
 
@@ -38,19 +38,9 @@ namespace api
         /// Connects to server
         /// </summary>
         /// <returns>Whether the operation succeeded.</returns>
-        private static bool Connect()
+        private static void Connect()
         {
-            try
-            {
                 communicationSocket.Connect(serverEndpoint);
-                return true;
-            }
-            catch
-            {
-                Disconnect();
-                return false;
-            }
-            
         }
 
         /// <summary>
