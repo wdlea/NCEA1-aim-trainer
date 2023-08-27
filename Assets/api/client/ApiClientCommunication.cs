@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
+using System.Threading;
 using System.Text;
 using UnityEngine;
 
@@ -13,52 +15,63 @@ namespace api
         const int BUFFER_SIZE = 1024;
         const int MAX_PACKET_LENGTH = 512;
 
-        internal static Queue<Packet> recievedPackets = new Queue<Packet>();
-        internal static Queue<TransmittingPacket> sendQueue = new Queue<TransmittingPacket>();
-        internal static Queue<ClaimTicket> recieveClaims = new Queue<ClaimTicket>();
+        const int THREAD_SLEEP_TIME = 10;//ms, this will be slept for when the thread is waiting for something to save cpu ticks, increase for less processing power required, but 'coarser' gameplay
+
+        internal static ConcurrentQueue<Packet> recievedPackets;
+        internal static ConcurrentQueue<TransmittingPacket> sendQueue;
+        internal static ConcurrentQueue<ClaimTicket> recieveClaims;
 
         public delegate void KillCoroutines();
         internal static KillCoroutines killCoroutines = null;
 
         /// <summary>
-        /// Spawns and respawns coroutines on a given gameobject. 
-        /// This also takes care of old coroutines that may or may
-        /// not be running. This will reset the current buffers and 
-        /// may cause corruption, this should only happen when changing
-        /// servers.
+        /// Creates the threads that handle networking.
+        /// Subsequent calls restart while clearing all 
+        /// means of communication between threads which
+        /// data may persist in between restarts.
+        /// <param name="surrogate">The monobehaviour to spawn the coroutine on
+        /// to allow it to interact with the game thread.</param>
         /// </summary>
-        /// <param name="surrogate">The gameobject to spawn the coroutines on.</param>
-        internal static void SpawnCoroutines(MonoBehaviour surrogate)
+        private static void StartThreads(MonoBehaviour surrogate)
         {
-            if (surrogate == null) return;//if the surrogate has been destroyed, i can't spawn any coroutines
-
             killCoroutines?.Invoke();
 
-            Coroutine recv = surrogate.StartCoroutine(RecievePacketsCoroutine());
-            Coroutine send = surrogate.StartCoroutine(SendPacketsCoroutine());
-            Coroutine claim = surrogate.StartCoroutine(HandleClaimsCoroutine());
+            sendQueue = new ConcurrentQueue<TransmittingPacket>();
+            recievedPackets = new ConcurrentQueue<Packet>();
+            recieveClaims = new ConcurrentQueue<ClaimTicket>();
+
+            Coroutine cor = surrogate.StartCoroutine(HandleClaimsCoroutine());
+
+            Thread recievePackets = new Thread(RecievePacketsThread);
+            Thread sendPackets = new Thread(SendPacketsThread);
+
+
+            recievePackets.Priority = System.Threading.ThreadPriority.BelowNormal;
+            sendPackets.Priority = System.Threading.ThreadPriority.Normal;
+
+            recievePackets.Start();
+            sendPackets.Start();
 
             killCoroutines = () =>
             {
-                killCoroutines = null;//this can only be run once
+                killCoroutines = null;
 
-                if (surrogate == null) return;//if the surrogate has been destroyed, so will the coroutines
+                if(surrogate != null)//if surrogate has been destroyed, so will the coroutine
+                    surrogate.StopCoroutine(cor);
 
-                surrogate.StopCoroutine(recv);
-                surrogate.StopCoroutine(send);
-                surrogate.StopCoroutine(claim);
+                recievePackets.Abort();
+                sendPackets.Abort();
             };
         }
 
         /// <summary>
-        /// Handles the recieving of packets from the server. This will be executed in the game via a "surrogate" gameobject.
+        /// Handles the recieving of packets from the server. 
         /// </summary>
-        /// <returns>The coroutine</returns>
-        private static IEnumerator RecievePacketsCoroutine()
+        private static void RecievePacketsThread()
         {
             List<byte> currentPacket = new List<byte>(MAX_PACKET_LENGTH);
 
-            while (Connected)
+            while (IsConnected)
             {
                 if (communicationSocket.Available > 0)
                 {
@@ -70,9 +83,11 @@ namespace api
                     {
                         if (b == END_OF_PACKET)
                         {
-                            recievedPackets.Enqueue(
-                                new Packet(currentPacket.ToArray())
-                            );
+                            Packet recieved = new Packet(currentPacket.ToArray());
+
+                            Debug.Log("Recieved Packet" + recieved.ToString());
+
+                            recievedPackets.Enqueue(recieved);
                             currentPacket.Clear();
                         }
                         else
@@ -86,17 +101,16 @@ namespace api
                     }
                 }
 
-                yield return null;
+                Thread.Sleep(THREAD_SLEEP_TIME);
             }
         }
 
         /// <summary>
-        /// Handles the sending of packets to the server. This will be executed in the game via a "surrogate" gameobject.
+        /// Handles the sending of packets to the server. 
         /// </summary>
-        /// <returns></returns>
-        private static IEnumerator SendPacketsCoroutine()
+        private static void SendPacketsThread()
         {
-            while (Connected)
+            while (IsConnected)
             {
                 if (sendQueue.TryDequeue(out TransmittingPacket toSend))
                 {
@@ -104,36 +118,40 @@ namespace api
                     recieveClaims.Enqueue(toSend.ticket);
                 }
 
-                yield return null;
+                Thread.Sleep(THREAD_SLEEP_TIME);
             }
         }
 
         /// <summary>
-        /// Handles the claims of packets from the recieve queues. This will be executed in the game via a "surrogate" gameobject.
+        /// Handles the claims of packets from the recieve queues. 
         /// </summary>
-        /// <returns></returns>
         private static IEnumerator HandleClaimsCoroutine()
         {
-            while (Connected)
+            while (IsConnected)
             {
                 if (recieveClaims.TryDequeue(out ClaimTicket ticket))
                 {
                     Packet claimedPacket = default;
                     do
                     {
-                        claimedPacket = (
-                            from Packet packet in recievedPackets
-                            where packet.type == ticket.expectedType || packet.type == PacketType.Error
-                            select packet
-                        ).First();
+                        if (recievedPackets.Count > 0)
+                        {
+                            claimedPacket = (
+                                from Packet packet in recievedPackets
+                                where packet.type == ticket.expectedType || packet.type == PacketType.Error
+                                select packet
+                            ).FirstOrDefault();
+                        }
+                        else
+                        {
+                            yield return null;//do as many packets as possible before surrendering control of thread
+                        }
 
-                        yield return null;
                     } while (claimedPacket == default);
 
                     ticket.onResponse(claimedPacket);
                 }
-
-                yield return null;
+                else yield return null;
             }
         }
 
@@ -148,7 +166,12 @@ namespace api
             communicationSocket.Send(new[] { END_OF_PACKET });
         }
     }
-
+    
+    /// <summary>
+    /// A delegate that is called when a response is recieved for
+    /// a sent packet
+    /// </summary>
+    /// <param name="response">The response packet.</param>
     public delegate void OnResponse(Packet response);
 
     /// <summary>
@@ -181,7 +204,19 @@ namespace api
         ServerBoundFrame = 'f',
         ClientBoundFrameResponse = 'F',
 
+        ServerBoundName = 'n',
+        ClientBoundNameResponse = 'N',
 
+        ServerBoundJoin = 'j',
+        ClientBoundJoinResponse = 'J',
+
+        ServerBoundLeave = 'l',
+        ClientBoundLeaveResponse = 'L',
+
+        ServerBoundCreate = 'c',
+        ClientBoundCreateResponse = 'C',
+
+        ServerBoundTerminate = 't',
     }
 
     /// <summary>
@@ -203,7 +238,7 @@ namespace api
 
         public Packet(byte[] packet) : this(
             (PacketType)(char)packet[0],
-            Encoding.Unicode.GetString(packet[1..]))
+            Encoding.ASCII.GetString(packet[1..]))
         { }
 
         public static Packet FromObject(PacketType type, object message)
@@ -213,11 +248,11 @@ namespace api
 
         public byte[] ToBytes()
         {
-            byte[] encodedType = Encoding.Unicode.GetBytes(
+            byte[] encodedType = Encoding.ASCII.GetBytes(
                     new[] { (char)type }
             );
 
-            byte[] encodedMessage = Encoding.Unicode.GetBytes(
+            byte[] encodedMessage = Encoding.ASCII.GetBytes(
                     message
             );
 
