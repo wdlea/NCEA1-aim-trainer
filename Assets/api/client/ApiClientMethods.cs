@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using UnityEngine;
 
 namespace api
@@ -13,7 +14,7 @@ namespace api
         /// </summary>
         /// <param name="packet">The packet that will be sent.</param>
         /// <param name="ticket">The ticket to handle the response packet.</param>
-        public static void EnqueueSend(Packet packet, ClaimTicket ticket)
+        internal static void EnqueueSend(Packet packet, ClaimTicket ticket)
         {
             sendQueue.Enqueue(
                 new TransmittingPacket
@@ -34,9 +35,8 @@ namespace api
         /// to use for spawning coroutines.</param>
         public static void JoinServer(MonoBehaviour surrogate)
         {
-            
             ServerEndpoint = new IPEndPoint(IPAddress.Parse(SERVER_ADDR), SERVER_PORT);
-            SpawnCoroutines(surrogate);
+            StartThreads(surrogate);
         }
     }
 }
