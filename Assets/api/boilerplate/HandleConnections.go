@@ -51,7 +51,6 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 			dataChan <- b
 		}
 	}
-
 }
 
 func HandleBytes(dataChan <-chan byte, packetChan chan<- Packet) {
