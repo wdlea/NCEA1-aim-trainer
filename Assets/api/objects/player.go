@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"net"
 )
 
 const GAME_NAME_LENGTH = 8
@@ -12,6 +13,8 @@ type Player struct {
 	Game *Game `json:"-"` //avoid circular marshal
 
 	X, Y, Dx, Dy float32
+
+	Conn net.Conn `json:"-"`
 }
 
 type Frame struct {
@@ -91,4 +94,13 @@ func (p *Player) Dispose() {
 func (p *Player) resetPos() {
 	fmt.Printf("Player %s is having thier position reset\n", p.Name)
 	p.X, p.Y, p.Dx, p.Dy = 0, 0, 0, 0
+}
+
+const BROADCAST_PREFIX = 'B'
+
+func (p *Player) SendBroadcast(message Packet) {
+	p.Conn.Write([]byte{BROADCAST_PREFIX})
+	p.Conn.Write([]byte{message.Type})
+	p.Conn.Write(message.Content)
+	p.Conn.Write([]byte{'\n'})
 }
