@@ -19,6 +19,7 @@ func HandleConn(conn net.Conn) {
 	user := new(Player)
 
 	defer user.Dispose()
+	user.Conn = conn
 
 	inboundDataChan := make(chan byte, BUFFER_SIZE)
 	inboundPacketChan := make(chan Packet, 8)
@@ -51,7 +52,6 @@ func HandleRecieve(dataChan chan<- byte, conn net.Conn) {
 			dataChan <- b
 		}
 	}
-
 }
 
 func HandleBytes(dataChan <-chan byte, packetChan chan<- Packet) {

@@ -155,6 +155,33 @@ namespace api
             }
         }
 
+        private static IEnumerator HandleBroadcasts()
+        {
+            while (IsConnected)
+            {
+                yield return null;
+
+                IEnumerable<Packet> broadcastPackets =
+                    (
+                        from Packet p in recievedPackets
+                        where p.type == PacketType.ClientBoundBroadcast
+                        select p
+                    );
+
+                recievedPackets =
+                    (ConcurrentQueue<Packet>)(
+                        from Packet p in recievedPackets
+                        where p.type == PacketType.ClientBoundBroadcast
+                        select p
+                    );
+                
+                foreach(Packet packet in broadcastPackets)
+                {
+                    //do stuff
+                }
+            }
+        }
+
         /// <summary>
         /// Sends a packet to the server, do not call this,
         /// instead add the packet to the sendQueue.
@@ -215,6 +242,8 @@ namespace api
 
         ServerBoundCreate = 'c',
         ClientBoundCreateResponse = 'C',
+
+        ClientBoundBroadcast = 'B'
 
         ServerBoundTerminate = 't',
     }
