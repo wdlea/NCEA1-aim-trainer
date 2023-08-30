@@ -18,22 +18,28 @@ const GAME_DURATION = 5 * time.Minute
 
 var ActiveGames *ll.LinkedList[*Game]
 
+// Searches for a game by the name
 func FindGame(name string) *ll.LinkedListNode[*Game] {
+	//first check if the name is valid
 	if len(name) == GAME_NAME_LENGTH {
+
+		//if it is, try a game with it and return it
 		for game := ActiveGames.First; game != nil; game = game.Next {
 			if game.Value.Name == name {
 				return game
 			}
 		}
 	} else {
+		//otherwise print an error to console and return nil
 		fmt.Println("Name with invalid length supplied, skipping")
 	}
 
 	return nil
 }
 
+// creating "enums"(as close as you can get to them in GO, a custom type and some constants)
 const (
-	GAME_WAITING_FOR_PLAYERS GameState = iota
+	GAME_WAITING_FOR_PLAYERS GameState = iota //this is valid becuase some of GO's quirks
 	GAME_RUNNING
 	GAME_DONE
 )
@@ -42,9 +48,8 @@ const (
 type Game struct {
 	Players [2]*Player
 	State   GameState
-	// Host    *Player
 
-	ListEntry *ll.LinkedListNode[*Game] `json:"-"`
+	ListEntry *ll.LinkedListNode[*Game] `json:"-"` //`json:"-"` sets the custom name so it will not be marshalled
 
 	Name string
 
@@ -53,11 +58,16 @@ type Game struct {
 	updateTicker    *time.Ticker `json:"-"`
 }
 
+// removes a player from the game
 func (g *Game) RemovePlayer(p *Player) {
+
+	//if the game has not yet started
 	if g.State == GAME_WAITING_FOR_PLAYERS {
+		//remove the player
 		g.removeFromPlayerList(p)
 		return
 	} else {
+		//if it has just destroy the game
 		g.Dispose() //cant keep playing with one player
 	}
 
@@ -66,12 +76,15 @@ func (g *Game) RemovePlayer(p *Player) {
 	}
 }
 
+// Starts a game
 func (g *Game) StartGame() {
+	//set state and start the timer
 	g.State = GAME_RUNNING
 	timer := time.NewTimer(GAME_DURATION)
 
 	g.Done = make(chan int, 1)
 
+	//start thread to listen for g.Done and the timer and quit the game once finished
 	go func(C <-chan time.Time, g *Game) {
 		for {
 			select {
@@ -87,11 +100,14 @@ func (g *Game) StartGame() {
 		}
 	}(timer.C, g)
 
+	// setup the ticker for the game updates
 	g.updateTicker = time.NewTicker(TICK_INTERVAL)
 
+	//actually start the game logic
 	go g.run()
 }
 
+// runs a game
 func (g *Game) run() {
 	for {
 		//get lock
@@ -113,6 +129,7 @@ func (g *Game) run() {
 	}
 }
 
+// updates a game, should be called based on the server tick rate
 func (g *Game) Update(deltatime float32) {
 	for _, player := range g.Players {
 		player.Update(deltatime)
@@ -134,7 +151,9 @@ func (g *Game) Dispose() {
 	g.ListEntry.Pop(ActiveGames)
 }
 
+// removes a player from the games player list
 func (g *Game) removeFromPlayerList(p *Player) {
+	//search for the player using -1 as the nil value
 	playerIdx := -1
 	for idx, pl := range g.Players {
 		if pl == p {
@@ -143,9 +162,11 @@ func (g *Game) removeFromPlayerList(p *Player) {
 		}
 	}
 
+	//if the player was found remove then
 	if playerIdx != -1 {
 		g.Players[playerIdx] = nil
 	} else {
+		//otherwise print an error to console
 		fmt.Println("Tried to remove player not in game")
 	}
 }

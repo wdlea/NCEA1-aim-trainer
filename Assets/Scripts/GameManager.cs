@@ -6,6 +6,9 @@ using UnityEngine;
 
 #nullable enable
 
+/// <summary>
+/// manages the game part of the game
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     [SerializeField] MyController me;

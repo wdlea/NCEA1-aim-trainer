@@ -177,7 +177,9 @@ namespace api
                 
                 foreach(Packet packet in broadcastPackets)
                 {
-                    //do stuff
+                    //transform packet
+                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.message));
+                    Methods.HandleBroadcast(newPacket);
                 }
             }
         }
@@ -243,7 +245,7 @@ namespace api
         ServerBoundCreate = 'c',
         ClientBoundCreateResponse = 'C',
 
-        ClientBoundBroadcast = 'B'
+        ClientBoundBroadcast = 'B',
 
         ServerBoundTerminate = 't',
     }

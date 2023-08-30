@@ -8,6 +8,9 @@ using UnityEngine.UI;
 
 #nullable enable
 
+/// <summary>
+/// Manages the main menu of the game
+/// </summary>
 public class MenuManager : MonoBehaviour
 {
     Promise<string>? namePromise;
