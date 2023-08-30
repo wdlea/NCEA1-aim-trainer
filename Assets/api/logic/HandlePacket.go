@@ -6,6 +6,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
+// handles routing the packet to the jhandling function
 func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (response []Packet, doTerminate bool) {
 	switch typeByte {
 

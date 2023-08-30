@@ -20,8 +20,9 @@ namespace api
             get => serverEndpoint;
             set
             {
-                if(serverEndpoint != value)
+                if(serverEndpoint != value)//if the endpoint has changed
                 {
+                    //disconnect and reconnect
                     Disconnect();
                     serverEndpoint = value;
                     Connect();
