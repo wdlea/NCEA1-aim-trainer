@@ -1,4 +1,6 @@
-﻿namespace api
+﻿using UnityEngine;
+
+namespace api
 {
     public static partial class Methods
     {
@@ -11,7 +13,19 @@
         internal static void HandleBroadcast(Packet newPacket)
         {
             //do stuff with packet
-            
+            switch (newPacket.type)
+            {
+                case PacketType.BroadcastStartGame:
+                    {
+                        Debug.Log("Started Game");
+                        break;
+                    }
+
+                default:
+                    {
+                        throw new UnexpectedPacketException();
+                    }
+            }
         }
     }
 }
