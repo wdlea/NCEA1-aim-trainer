@@ -4,7 +4,7 @@ namespace api
 {
     public static partial class Methods
     {
-        public static bool GameStarted { get; private set; }
+        public static bool IsGameStarted { get; private set; }
 
         /// <summary>
         /// Handles a broadcast packet
@@ -20,7 +20,7 @@ namespace api
                 case PacketType.BroadcastStartGame:
                     {
                         Debug.Log("Started Game");
-                        GameStarted = true;
+                        IsGameStarted = true;
                         break;
                     }
 

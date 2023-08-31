@@ -8,6 +8,8 @@ namespace api
     public static partial class Methods
     {
 
+        public static bool IsHost { get; private set; }
+
         /// <summary>
         /// Creates a game.
         /// </summary>
@@ -17,8 +19,6 @@ namespace api
             Debug.Log("Creating Game");
 
             Promise<string> promise = new Promise<string>();
-
-            
 
             Packet packet = new(PacketType.ServerBoundCreate, "");
 
@@ -40,7 +40,8 @@ namespace api
             };
 
 
-            GameStarted = false;
+            IsGameStarted = false;
+            IsHost = true;
             Client.EnqueueSend(packet, ticket);
 
             return promise;

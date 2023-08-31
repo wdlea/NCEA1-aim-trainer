@@ -31,7 +31,8 @@ namespace api {
                   }
             };
 
-            GameStarted = false;
+            IsHost = true;
+            IsGameStarted = false;
             Client.EnqueueSend(packet, ticket);
 
             return promise;
