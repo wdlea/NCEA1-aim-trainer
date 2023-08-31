@@ -105,6 +105,12 @@ func (g *Game) StartGame() {
 
 	//actually start the game logic
 	go g.run()
+
+	for _, player := range g.Players {
+		player.SendBroadcast(Packet{
+			Type: 'S',
+		})
+	}
 }
 
 // runs a game
