@@ -22,12 +22,9 @@ public class GameManager : MonoBehaviour
 
     public static string myName = "";//todo, keep track of this in methods instead of here
 
-    public static bool gameStarted = false;
-
-
     private void Update()
     {
-        if (gameStarted)
+        if (Methods.IsGameStarted)
         {
             if (gamePromise == null)
                 gamePromise = Methods.SendFrame(me.Frame);
