@@ -31,6 +31,7 @@ namespace api {
                   }
             };
 
+            GameStarted = false;
             Client.EnqueueSend(packet, ticket);
 
             return promise;

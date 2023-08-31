@@ -22,18 +22,24 @@ public class GameManager : MonoBehaviour
 
     public static string myName = "";//todo, keep track of this in methods instead of here
 
+    public static bool gameStarted = false;
+
+
     private void Update()
     {
-        if(gamePromise == null)
-            gamePromise = Methods.SendFrame(me.Frame);
-        else if (gamePromise.Finished)
+        if (gameStarted)
         {
-            Exception? err = gamePromise.Get(out Game game);
+            if (gamePromise == null)
+                gamePromise = Methods.SendFrame(me.Frame);
+            else if (gamePromise.Finished)
+            {
+                Exception? err = gamePromise.Get(out Game game);
 
-            if (err != null) throw err;
+                if (err != null) throw err;
 
-            ApplyGame(game);
-            gamePromise = null;
+                ApplyGame(game);
+                gamePromise = null;
+            }
         }
     }
 

@@ -18,7 +18,10 @@ namespace api
 
             Promise<string> promise = new Promise<string>();
 
+            
+
             Packet packet = new(PacketType.ServerBoundCreate, "");
+
 
             ClaimTicket ticket = new ClaimTicket
             {
@@ -36,7 +39,10 @@ namespace api
                   }
             };
 
+
+            GameStarted = false;
             Client.EnqueueSend(packet, ticket);
+
             return promise;
         }
     }
