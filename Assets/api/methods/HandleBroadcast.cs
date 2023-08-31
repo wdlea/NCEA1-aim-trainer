@@ -11,6 +11,7 @@
         internal static void HandleBroadcast(Packet newPacket)
         {
             //do stuff with packet
+            
         }
     }
 }
