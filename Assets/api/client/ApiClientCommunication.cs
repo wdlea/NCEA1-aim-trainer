@@ -34,7 +34,7 @@ namespace api
         /// </summary>
         private static void StartThreads(MonoBehaviour surrogate)
         {
-            killCoroutines?.Invoke();
+            KillThreads();
 
             sendQueue = new ConcurrentQueue<TransmittingPacket>();
             recievedPackets = new ConcurrentQueue<Packet>();
@@ -62,6 +62,14 @@ namespace api
                 recievePackets.Abort();
                 sendPackets.Abort();
             };
+        }
+
+        /// <summary>
+        /// Kills running threads and coroutines
+        /// </summary>
+        public static void KillThreads()
+        {
+            killCoroutines?.Invoke();
         }
 
         /// <summary>
