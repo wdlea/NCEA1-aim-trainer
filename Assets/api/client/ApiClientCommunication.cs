@@ -40,7 +40,8 @@ namespace api
             recievedPackets = new ConcurrentQueue<Packet>();
             recieveClaims = new ConcurrentQueue<ClaimTicket>();
 
-            Coroutine cor = surrogate.StartCoroutine(HandleClaimsCoroutine());
+            Coroutine claimsCoroutine = surrogate.StartCoroutine(HandleClaimsCoroutine());
+            Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCoroutine());
 
             Thread recievePackets = new Thread(RecievePacketsThread);
             Thread sendPackets = new Thread(SendPacketsThread);
@@ -56,8 +57,11 @@ namespace api
             {
                 killCoroutines = null;
 
-                if(surrogate != null)//if surrogate has been destroyed, so will the coroutine
-                    surrogate.StopCoroutine(cor);
+                if (surrogate != null)//if surrogate has been destroyed, so will the coroutines
+                {
+                    surrogate.StopCoroutine(claimsCoroutine);
+                    surrogate.StopCoroutine(broadcastCoroutine);
+                }
 
                 recievePackets.Abort();
                 sendPackets.Abort();
@@ -163,7 +167,7 @@ namespace api
             }
         }
 
-        private static IEnumerator HandleBroadcasts()
+        private static IEnumerator HandleBroadcastsCoroutine()
         {
             while (IsConnected)
             {
@@ -177,9 +181,9 @@ namespace api
                     );
 
                 recievedPackets =
-                    (ConcurrentQueue<Packet>)(
+                    new ConcurrentQueue<Packet>(
                         from Packet p in recievedPackets
-                        where p.type == PacketType.ClientBoundBroadcast
+                        where p.type != PacketType.ClientBoundBroadcast
                         select p
                     );
                 
