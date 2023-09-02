@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
         {
             if(player.Name == myName)
             {
-                //skip for now
+                Debug.Log(player.Dx);
             }
             else
             {

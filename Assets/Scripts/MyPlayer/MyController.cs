@@ -26,8 +26,6 @@ public class MyController : MonoBehaviour
 
     private void Update()
     {
-        
-
         X = Input.mousePosition.x;
         Y = Input.mousePosition.y;
 
@@ -40,7 +38,7 @@ public class MyController : MonoBehaviour
             float pX = X;
             float pY = Y;
 
-            yield return new WaitForSeconds(1 / 5);//1hz
+            yield return new WaitForSeconds(1 / 5);//5hz
 
             Dx = (X - pX) / Time.deltaTime;
             Dy = (Y - pY) / Time.deltaTime;
