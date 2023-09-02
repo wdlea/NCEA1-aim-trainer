@@ -154,11 +154,9 @@ namespace api
                                 select packet
                             ).FirstOrDefault();
                         }
-                        else
-                        {
-                            yield return null;//do as many packets as possible before surrendering control of thread
-                        }
 
+                        if(claimedPacket == default)
+                            yield return null;//do as many packets as possible before surrendering control of thread
                     } while (claimedPacket == default);
 
                     ticket.onResponse(claimedPacket);
