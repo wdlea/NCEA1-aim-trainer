@@ -181,7 +181,7 @@ namespace api
                     );
 
                 recievedPackets =
-                    (ConcurrentQueue<Packet>)(
+                    new ConcurrentQueue<Packet>(
                         from Packet p in recievedPackets
                         where p.type != PacketType.ClientBoundBroadcast
                         select p
