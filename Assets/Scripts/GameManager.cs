@@ -24,16 +24,19 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if(gamePromise == null)
-            gamePromise = Methods.SendFrame(me.Frame);
-        else if (gamePromise.Finished)
+        if (Methods.IsGameStarted)
         {
-            Exception? err = gamePromise.Get(out Game game);
+            if (gamePromise == null)
+                gamePromise = Methods.SendFrame(me.Frame);
+            else if (gamePromise.Finished)
+            {
+                Exception? err = gamePromise.Get(out Game game);
 
-            if (err != null) throw err;
+                if (err != null) throw err;
 
-            ApplyGame(game);
-            gamePromise = null;
+                ApplyGame(game);
+                gamePromise = null;
+            }
         }
     }
 

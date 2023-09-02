@@ -27,8 +27,7 @@ public class MenuManager : MonoBehaviour
 
     [SerializeField] private Indicator nameIndicator;
 
-
-    [SerializeField] private int gameBuildIndex;
+    [SerializeField] private int limboSceneIndex;
 
     public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
     static bool namePending = false;
@@ -70,7 +69,7 @@ public class MenuManager : MonoBehaviour
             }
             else if(success)
             {
-                SceneManager.LoadScene(gameBuildIndex);
+                SceneManager.LoadScene(limboSceneIndex);
             }
             else
             {
@@ -86,7 +85,7 @@ public class MenuManager : MonoBehaviour
             }
             else if(code is not null)
             {
-                SceneManager.LoadScene(gameBuildIndex);
+                SceneManager.LoadScene(limboSceneIndex);
                 Debug.Log(code);
             }
             else

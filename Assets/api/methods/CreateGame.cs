@@ -3,10 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#nullable enable
+
 namespace api
 {
     public static partial class Methods
     {
+
+        public static bool IsHost { get; private set; }
+
+        public static string? GameCode { get; private set; }//todo make this the only isntance of code
 
         /// <summary>
         /// Creates a game.
@@ -20,6 +26,7 @@ namespace api
 
             Packet packet = new(PacketType.ServerBoundCreate, "");
 
+
             ClaimTicket ticket = new ClaimTicket
             {
                 expectedType = PacketType.ClientBoundCreateResponse,
@@ -27,6 +34,7 @@ namespace api
                   {
                       if (p.type == PacketType.ClientBoundCreateResponse)
                       {
+                          GameCode = p.message;
                           promise.Fulfil(p.message);
                       }
                       else
@@ -36,7 +44,11 @@ namespace api
                   }
             };
 
+
+            IsGameStarted = false;
+            IsHost = true;
             Client.EnqueueSend(packet, ticket);
+
             return promise;
         }
     }

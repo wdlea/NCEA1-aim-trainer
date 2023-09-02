@@ -243,8 +243,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac52d0acc33f0dc4ea9c2f75bf2b6dd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nameInput: {fileID: 2056284417}
-  codeInput: {fileID: 254584156}
 --- !u!1 &147480414
 GameObject:
   m_ObjectHideFlags: 0
@@ -2244,7 +2242,7 @@ MonoBehaviour:
   joinButton: {fileID: 331744392}
   hostButton: {fileID: 1824146236}
   nameIndicator: {fileID: 1539605493}
-  gameBuildIndex: 1
+  limboSceneIndex: 1
 --- !u!4 &2016146084
 Transform:
   m_ObjectHideFlags: 0
