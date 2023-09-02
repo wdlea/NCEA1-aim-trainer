@@ -97,6 +97,19 @@ public class MenuManager : MonoBehaviour
             }
             hostPromise = null;
         }
+
+        if(namePromise != null || joinPromise != null || hostPromise != null)//if there are ANY actions pending
+        {
+            //disable buttons
+            joinButton.interactable = false;
+            hostButton.interactable = false;
+        }
+        else
+        {
+            //otherwise keep them enabled
+            joinButton.interactable = true;
+            hostButton.interactable = true;
+        }
     }
 
     public void ApplyName(string name)
