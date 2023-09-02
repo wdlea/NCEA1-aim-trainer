@@ -17,7 +17,7 @@ public class MenuManager : MonoBehaviour
     Promise<bool>? joinPromise;
     Promise<string>? hostPromise;
 
-    [SerializeField] surrogate surrogate;
+    [SerializeField] Surrogate surrogate;
 
     [SerializeField] private InputField nameInput;
     [SerializeField] private InputField codeInput;
