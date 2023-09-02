@@ -41,7 +41,7 @@ namespace api
             recieveClaims = new ConcurrentQueue<ClaimTicket>();
 
             Coroutine claimsCoroutine = surrogate.StartCoroutine(HandleClaimsCoroutine());
-            Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCorutine());
+            Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCoroutine());
 
             Thread recievePackets = new Thread(RecievePacketsThread);
             Thread sendPackets = new Thread(SendPacketsThread);
@@ -167,7 +167,7 @@ namespace api
             }
         }
 
-        private static IEnumerator HandleBroadcastsCorutine()
+        private static IEnumerator HandleBroadcastsCoroutine()
         {
             while (IsConnected)
             {
