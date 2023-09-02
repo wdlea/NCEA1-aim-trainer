@@ -59,6 +59,8 @@ public class MenuManager : MonoBehaviour
                 nameIndicator.State = Indicator.IndicatorState.Completed;
             }
             namePending = false;
+
+            namePromise = null;
         }
 
         if(joinPromise != null && joinPromise.Finished)
@@ -75,6 +77,7 @@ public class MenuManager : MonoBehaviour
             {
                 throw new Exception("Achievement unlocked: How did we get here?");//undefined behavior
             }
+            joinPromise = null;
         }
 
         if(hostPromise != null && hostPromise.Finished)
@@ -92,6 +95,7 @@ public class MenuManager : MonoBehaviour
             {
                 throw new Exception("Achievement unlocked: How did we get here?");//undefined behavior
             }
+            hostPromise = null;
         }
     }
 

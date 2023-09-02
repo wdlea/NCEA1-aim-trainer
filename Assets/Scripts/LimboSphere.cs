@@ -9,14 +9,10 @@ public class LimboSphere : MonoBehaviour
 
     Rigidbody rb;
 
-    private void OnValidate()
-    {
-        rb = GetComponent<Rigidbody>();
-    }
-
     void Start()
     {
         InvokeRepeating(nameof(TeleportBack), offset, interval);
+        rb = GetComponent<Rigidbody>();
     }
 
     void TeleportBack()

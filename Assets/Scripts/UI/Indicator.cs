@@ -11,8 +11,8 @@ public class Indicator : MonoBehaviour
     [SerializeField] private Sprite completed;
     [SerializeField] private Sprite pending;
     [SerializeField] private Sprite awaiting;
-    
-    private void OnValidate()
+
+    private void Start()
     {
         image = GetComponent<Image>();
         State = IndicatorState.Awaiting;
