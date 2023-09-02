@@ -20,7 +20,24 @@ func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate 
 		return
 	}
 
-	//send the response
+	//host game
+	ok := user.HostGame()
+
+	//if that failed send an error
+	if !ok {
+		response = append(
+			response,
+			Packet{
+				Type: 'E',
+				Content: []byte(
+					"Failed to create game.",
+				),
+			},
+		)
+		return
+	}
+
+	//otherwise send the response with the name
 	response = append(
 		response,
 		Packet{
