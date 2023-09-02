@@ -31,7 +31,7 @@ func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool)
 			user.ApplyFrame(frame)
 
 			//marshal the game for the respones
-			marshalledGame, err := json.Marshal(&user.Game)
+			marshalledGame, err := json.Marshal(user.Game)
 			if err != nil {
 				fmt.Printf("Error while marshaling game: %s\n", err.Error())
 				return

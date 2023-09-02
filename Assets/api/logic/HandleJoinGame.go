@@ -58,7 +58,6 @@ func HandleJoinGame(pak []byte, user *Player) (response []Packet, doTerminate bo
 				},
 			)
 		}
-
 	}
 
 	return
