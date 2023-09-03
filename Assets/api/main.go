@@ -7,6 +7,7 @@ import (
 	"os"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
+	"github.com/wdlea/aimtrainerAPI/boilerplate"
 	"github.com/wdlea/aimtrainerAPI/objects"
 )
 
@@ -44,7 +45,7 @@ AcceptLoop:
 		select {
 		case conn := <-connChan:
 			{
-				go HandleConn(conn)
+				go boilerplate.HandleConn(conn)
 			}
 		case <-ctx.Done():
 			{
