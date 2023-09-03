@@ -8,14 +8,17 @@ COPY go.mod go.mod
 COPY main.go main.go
 
 COPY objects objects
+COPY boilerplate boilerplate
+COPY logic logic
+COPY vendor vendor
 
 
 
 #import external dependencies
 COPY go.sum go.sum
-RUN go get ./...
+# RUN go get ./...
 
-RUN go install github.com/wdlea/main.go
+RUN go install github.com/wdlea/aimtrainerAPI
 
 EXPOSE 8088
 
