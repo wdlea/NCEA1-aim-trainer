@@ -42,6 +42,7 @@ namespace api
 
             Coroutine claimsCoroutine = surrogate.StartCoroutine(HandleClaimsCoroutine());
             Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCoroutine());
+            Coroutine pruneCoroutine = surrogate.StartCoroutine(PruneRecievedCorutine());
 
             Thread recievePackets = new Thread(RecievePacketsThread);
             Thread sendPackets = new Thread(SendPacketsThread);
@@ -61,6 +62,7 @@ namespace api
                 {
                     surrogate.StopCoroutine(claimsCoroutine);
                     surrogate.StopCoroutine(broadcastCoroutine);
+                    surrogate.StopCoroutine(pruneCoroutine);
                 }
 
                 recievePackets.Abort();
@@ -169,6 +171,10 @@ namespace api
             }
         }
 
+        /// <summary>
+        /// Handles the broadcast packets
+        /// </summary>
+        /// <returns></returns>
         private static IEnumerator HandleBroadcastsCoroutine()
         {
             while (IsConnected)
@@ -191,6 +197,26 @@ namespace api
                     packet.claimed = true;
                     Methods.HandleBroadcast(newPacket);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Repeatedly prunes the recieved packets queue
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerator PruneRecievedCorutine()
+        {
+            while (IsConnected)
+            {
+                recievedPackets = new ConcurrentQueue<RecievedPacket>(
+                    from RecievedPacket r in recievedPackets
+                    where !r.claimed
+                    select r
+                );
+
+                const float PRUNE_INTERVAL = 2.0f;//seconds
+
+                yield return new WaitForSeconds(PRUNE_INTERVAL);
             }
         }
 
