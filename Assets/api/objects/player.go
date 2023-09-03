@@ -13,14 +13,14 @@ type Player struct {
 
 	Game *Game `json:"-"` //avoid circular marshal
 
-	X, Y, Dx, Dy float32
+	X, Y, Dx, Dy float64
 
 	Conn net.Conn `json:"-"`
 }
 
 // represents an instant of the players motion
 type Frame struct {
-	X, Y, Dx, Dy float32
+	X, Y, Dx, Dy float64
 }
 
 // creates and hosts a game
@@ -98,7 +98,7 @@ func (p *Player) ApplyFrame(f Frame) {
 }
 
 // updates a player based on theyr dX and dY
-func (p *Player) Update(deltaTime float32) {
+func (p *Player) Update(deltaTime float64) {
 	p.X += p.Dx * deltaTime
 	p.Y += p.Dy * deltaTime
 }

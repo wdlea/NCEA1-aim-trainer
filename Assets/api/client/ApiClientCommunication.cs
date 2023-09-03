@@ -17,7 +17,7 @@ namespace api
 
         const int THREAD_SLEEP_TIME = 10;//ms, this will be slept for when the thread is waiting for something to save cpu ticks, increase for less processing power required, but 'coarser' gameplay
 
-        internal static ConcurrentQueue<Packet> recievedPackets;
+        internal static ConcurrentQueue<RecievedPacket> recievedPackets;
         internal static ConcurrentQueue<TransmittingPacket> sendQueue;
         internal static ConcurrentQueue<ClaimTicket> recieveClaims;
 
@@ -37,11 +37,12 @@ namespace api
             KillThreads();
 
             sendQueue = new ConcurrentQueue<TransmittingPacket>();
-            recievedPackets = new ConcurrentQueue<Packet>();
+            recievedPackets = new ConcurrentQueue<RecievedPacket>();
             recieveClaims = new ConcurrentQueue<ClaimTicket>();
 
             Coroutine claimsCoroutine = surrogate.StartCoroutine(HandleClaimsCoroutine());
             Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCoroutine());
+            Coroutine pruneCoroutine = surrogate.StartCoroutine(PruneRecievedCorutine());
 
             Thread recievePackets = new Thread(RecievePacketsThread);
             Thread sendPackets = new Thread(SendPacketsThread);
@@ -61,6 +62,7 @@ namespace api
                 {
                     surrogate.StopCoroutine(claimsCoroutine);
                     surrogate.StopCoroutine(broadcastCoroutine);
+                    surrogate.StopCoroutine(pruneCoroutine);
                 }
 
                 recievePackets.Abort();
@@ -99,7 +101,7 @@ namespace api
 
                             Debug.Log("Recieved Packet" + recieved.ToString());
 
-                            recievedPackets.Enqueue(recieved);
+                            recievedPackets.Enqueue(new RecievedPacket(recieved));
                             currentPacket.Clear();
                         }
                         else
@@ -143,15 +145,15 @@ namespace api
             {
                 if (recieveClaims.TryDequeue(out ClaimTicket ticket))
                 {
-                    Packet claimedPacket = default;
+                    RecievedPacket claimedPacket = default;
                     do
                     {
                         if (recievedPackets.Count > 0)
                         {
                             claimedPacket = (
-                                from Packet packet in recievedPackets
-                                where packet.type == ticket.expectedType || packet.type == PacketType.Error
-                                select packet
+                                from RecievedPacket p in recievedPackets
+                                where !p.claimed && (p.packet.type == ticket.expectedType || p.packet.type == PacketType.Error)
+                                select p
                             ).FirstOrDefault();
                         }
 
@@ -159,38 +161,60 @@ namespace api
                             yield return null;//do as many packets as possible before surrendering control of thread
                     } while (claimedPacket == default);
 
-                    ticket.onResponse(claimedPacket);
+                    claimedPacket.claimed = true;
+
+                    ticket.onResponse(claimedPacket.packet);
                 }
                 else yield return null;
             }
         }
 
+        /// <summary>
+        /// Handles the broadcast packets
+        /// </summary>
+        /// <returns></returns>
         private static IEnumerator HandleBroadcastsCoroutine()
         {
             while (IsConnected)
             {
                 yield return null;
 
-                IEnumerable<Packet> broadcastPackets =
+                IEnumerable<RecievedPacket> broadcastPackets =
                     (
-                        from Packet p in recievedPackets
-                        where p.type == PacketType.ClientBoundBroadcast
+                        from RecievedPacket p in recievedPackets
+                        where !p.claimed && p.packet.type == PacketType.ClientBoundBroadcast
                         select p
                     );
 
-                recievedPackets =
-                    new ConcurrentQueue<Packet>(
-                        from Packet p in recievedPackets
-                        where p.type != PacketType.ClientBoundBroadcast
-                        select p
-                    );
                 
-                foreach(Packet packet in broadcastPackets)
+                
+                foreach(RecievedPacket packet in broadcastPackets)
                 {
                     //transform packet
-                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.message));
+                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.packet.message));
+                    packet.claimed = true;
                     Methods.HandleBroadcast(newPacket);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Repeatedly prunes the recieved packets queue
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerator PruneRecievedCorutine()
+        {
+            while (IsConnected)
+            {
+                recievedPackets = new ConcurrentQueue<RecievedPacket>(
+                    from RecievedPacket r in recievedPackets
+                    where !r.claimed
+                    select r
+                );
+
+                const float PRUNE_INTERVAL = 2.0f;//seconds
+
+                yield return new WaitForSeconds(PRUNE_INTERVAL);
             }
         }
 
@@ -221,6 +245,21 @@ namespace api
     {
         public Packet packet;
         public ClaimTicket ticket;
+    }
+
+    /// <summary>
+    /// A packet in the recieved queue
+    /// </summary>
+    internal class RecievedPacket
+    {
+        public RecievedPacket(Packet p)
+        {
+            packet = p;
+            claimed = false;
+        }
+
+        public bool claimed;
+        public Packet packet;
     }
 
     /// <summary>
@@ -267,7 +306,7 @@ namespace api
     /// that gets sent to the server.
     /// </summary>
     [Serializable]
-    public struct Packet
+    public class Packet
     {
         public readonly PacketType type;
 

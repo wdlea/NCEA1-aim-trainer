@@ -136,7 +136,7 @@ func (g *Game) run() {
 }
 
 // updates a game, should be called based on the server tick rate
-func (g *Game) Update(deltatime float32) {
+func (g *Game) Update(deltatime float64) {
 	for _, player := range g.Players {
 		player.Update(deltatime)
 	}
