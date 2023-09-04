@@ -2,10 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[RequireComponent(typeof(RectTransform))]
 public class MyController : MonoBehaviour
 {
+    const float MIN_COORD = -100f;
+    const float MAX_COORD = 100f;
+
     public float X, Y, Dx, Dy;
+
+    RectTransform me;
+    RectTransform parent;
+    Canvas gameCanvas;
 
     public api.objects.Frame Frame
     {
@@ -21,6 +28,10 @@ public class MyController : MonoBehaviour
 
     private void Start()
     {
+        me = GetComponent<RectTransform>();
+        parent = me.parent.GetComponent<RectTransform>();
+        gameCanvas = me.GetComponentInParent<Canvas>();
+
         StartCoroutine(UpdateDeltaPos());
     }
 
@@ -29,7 +40,19 @@ public class MyController : MonoBehaviour
         X = Input.mousePosition.x;
         Y = Input.mousePosition.y;
 
-        transform.position = new Vector3(X, Y, 0);
+        float xScale = parent.rect.width * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
+        float yScale = parent.rect.height * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
+
+        X -= me.parent.position.x;
+        Y -= me.parent.position.y;
+
+        X /= xScale;
+        Y /= yScale;
+
+        X = Mathf.Clamp(X, MIN_COORD, MAX_COORD);
+        Y = Mathf.Clamp(Y, MIN_COORD, MAX_COORD);
+
+        transform.position = new Vector3(X * xScale, Y * yScale, 0) + me.parent.position;
     }
 
     private IEnumerator UpdateDeltaPos()
