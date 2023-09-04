@@ -53,7 +53,8 @@ type Game struct {
 
 	Name string
 
-	Targets []Target `json:"-"` //dont serialize, the data will be shared using broadcasts
+	Targets         ll.LinkedList[*Target] `json:"-"` //dont serialize, the data will be shared using broadcasts
+	CurrentTargetID float64                `json:"-"`
 
 	DestructionLock sync.Mutex   `json:"-"`
 	Done            chan int     `json:"-"`
