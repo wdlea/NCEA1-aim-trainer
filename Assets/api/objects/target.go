@@ -30,7 +30,7 @@ func SpawnTarget(g *Game) {
 		return
 	}
 
-	g.SendBroadcast(Packet{
+	g.SendBroadcastAll(Packet{
 		Type:    'T',
 		Content: marshalled,
 	})
@@ -48,7 +48,7 @@ func (g *Game) DestroyTargetByID(id float64) {
 func (g *Game) DestroyTarget(t *Target) {
 	t.llNode.Pop(&g.Targets)
 
-	g.SendBroadcast(Packet{
+	g.SendBroadcastAll(Packet{
 		Type:    'D',
 		Content: []byte(fmt.Sprintf("%f", t.ID)),
 	})
