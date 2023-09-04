@@ -53,6 +53,8 @@ type Game struct {
 
 	Name string
 
+	Targets []Target `json:"-"` //dont serialize, the data will be shared using broadcasts
+
 	DestructionLock sync.Mutex   `json:"-"`
 	Done            chan int     `json:"-"`
 	updateTicker    *time.Ticker `json:"-"`
@@ -175,4 +177,8 @@ func (g *Game) removeFromPlayerList(p *Player) {
 		//otherwise print an error to console
 		fmt.Println("Tried to remove player not in game")
 	}
+}
+
+func (g *Game) SendBroadcast(p Packet) {
+	//todo
 }
