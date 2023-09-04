@@ -23,6 +23,6 @@ public class OtherPlayer : MonoBehaviour
         X += Dx * Time.deltaTime;
         Y += Dy * Time.deltaTime;
 
-        transform.position = new Vector3(X, Y, 0);
+        transform.position = new Vector3(X * MyController.XScale, Y * MyController.YScale, 0) + MyController.GameAreaPosition;
     }
 }
