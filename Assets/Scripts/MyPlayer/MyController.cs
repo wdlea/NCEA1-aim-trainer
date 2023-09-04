@@ -5,8 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(RectTransform))]
 public class MyController : MonoBehaviour
 {
-    const float MIN_COORD = -100f;
-    const float MAX_COORD = 100f;
+    public const float MIN_COORD = -100f;
+    public const float MAX_COORD = 100f;
 
     public float X, Y, Dx, Dy;
 
