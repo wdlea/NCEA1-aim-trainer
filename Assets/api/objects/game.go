@@ -180,6 +180,7 @@ func (g *Game) removeFromPlayerList(p *Player) {
 	}
 }
 
+// sends a broadcast to all players
 func (g *Game) SendBroadcastAll(p Packet) {
 	for _, player := range g.Players {
 		player.SendBroadcast(p)

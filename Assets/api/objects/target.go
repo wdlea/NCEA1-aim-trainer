@@ -14,6 +14,7 @@ type Target struct {
 	llNode *ll.LinkedListNode[*Target]
 }
 
+// spawns a target
 func SpawnTarget(g *Game) {
 	t := new(Target)
 
@@ -36,6 +37,7 @@ func SpawnTarget(g *Game) {
 	})
 }
 
+// finds a target with a particular ID and destroys it
 func (g *Game) DestroyTargetByID(id float64) {
 	for current := g.Targets.First; current != nil; current = current.Next { //iterate over linkedlist
 		if current.Value.ID == id {
@@ -45,6 +47,7 @@ func (g *Game) DestroyTargetByID(id float64) {
 	}
 }
 
+// destroys a target by reference
 func (g *Game) DestroyTarget(t *Target) {
 	t.llNode.Pop(&g.Targets)
 
