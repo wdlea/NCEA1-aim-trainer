@@ -10,9 +10,13 @@ public class MyController : MonoBehaviour
 
     public float X, Y, Dx, Dy;
 
-    RectTransform me;
-    RectTransform parent;
-    Canvas gameCanvas;
+    static RectTransform me;
+    static RectTransform parent;
+    static Canvas gameCanvas;
+
+    public static float XScale => parent.rect.width * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
+    public static float YScale => parent.rect.height * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
+    public static Vector3 GameAreaPosition => parent.position;
 
     public api.objects.Frame Frame
     {
@@ -28,6 +32,9 @@ public class MyController : MonoBehaviour
 
     private void Start()
     {
+        if (me != null && me.gameObject != gameObject)
+            Debug.LogWarning("More than 1 mycontroller in scene");
+
         me = GetComponent<RectTransform>();
         parent = me.parent.GetComponent<RectTransform>();
         gameCanvas = me.GetComponentInParent<Canvas>();
@@ -40,16 +47,11 @@ public class MyController : MonoBehaviour
         X = Input.mousePosition.x;
         Y = Input.mousePosition.y;
 
-        float xScale = parent.rect.width * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
-        float yScale = parent.rect.height * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
+        X -= GameAreaPosition.x;
+        Y -= GameAreaPosition.y;
 
-        X -= me.parent.position.x;
-        Y -= me.parent.position.y;
-
-        
-
-        X /= xScale;
-        Y /= yScale;
+        X /= XScale;
+        Y /= YScale;
 
         //hide cursor if in game
         Cursor.visible = X < MIN_COORD || X > MAX_COORD || Y < MIN_COORD || Y > MAX_COORD;
@@ -57,7 +59,7 @@ public class MyController : MonoBehaviour
         X = Mathf.Clamp(X, MIN_COORD, MAX_COORD);
         Y = Mathf.Clamp(Y, MIN_COORD, MAX_COORD);
 
-        transform.position = new Vector3(X * xScale, Y * yScale, 0) + me.parent.position;
+        transform.position = new Vector3(X * XScale, Y * YScale, 0) + GameAreaPosition;
     }
 
     private IEnumerator UpdateDeltaPos()
