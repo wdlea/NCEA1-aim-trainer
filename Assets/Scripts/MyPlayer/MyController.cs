@@ -46,8 +46,13 @@ public class MyController : MonoBehaviour
         X -= me.parent.position.x;
         Y -= me.parent.position.y;
 
+        
+
         X /= xScale;
         Y /= yScale;
+
+        //hide cursor if in game
+        Cursor.visible = X < MIN_COORD || X > MAX_COORD || Y < MIN_COORD || Y > MAX_COORD;
 
         X = Mathf.Clamp(X, MIN_COORD, MAX_COORD);
         Y = Mathf.Clamp(Y, MIN_COORD, MAX_COORD);
