@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -13,6 +14,8 @@ type GameState int
 const TICK_RATE = 40 //hz
 const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
+
+const TARGET_SPAWN_CHANCE = 0.2 //per second(s^-1)
 
 const GAME_DURATION = 5 * time.Minute
 
@@ -142,6 +145,11 @@ func (g *Game) run() {
 func (g *Game) Update(deltatime float64) {
 	for _, player := range g.Players {
 		player.Update(deltatime)
+	}
+
+	//roll chance, proportional to deltaTime so that the spawn chance is uniform
+	if rand.Float64() < TARGET_SPAWN_CHANCE*deltatime {
+		SpawnTarget(g)
 	}
 }
 
