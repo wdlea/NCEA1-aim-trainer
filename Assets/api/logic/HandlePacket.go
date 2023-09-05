@@ -35,6 +35,10 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (respons
 		{
 			return HandleSetName(marshalledPacket, user)
 		}
+	case 'h':
+		{
+			return HandleHitTarget(marshalledPacket, user)
+		}
 	default:
 		{
 			fmt.Printf("Invalid packet type requested: %s, terminating connection\n", string(typeByte))
