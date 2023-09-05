@@ -4,7 +4,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
-// Handles a player joining a hosted game
+// Handles the 'j' packet, which is sent whenever the player tries to join a game
 func HandleJoinGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	//if the name has not been set prevent them from joining
 	if len(user.Name) <= 0 {
