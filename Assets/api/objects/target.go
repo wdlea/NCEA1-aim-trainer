@@ -38,13 +38,15 @@ func SpawnTarget(g *Game) {
 }
 
 // finds a target with a particular ID and destroys it
-func (g *Game) DestroyTargetByID(id float64) {
+func (g *Game) DestroyTargetByID(id float64) (ok bool) {
 	for current := g.Targets.First; current != nil; current = current.Next { //iterate over linkedlist
 		if current.Value.ID == id {
 			g.DestroyTarget(current.Value)
-			return
+			return true
 		}
 	}
+
+	return false
 }
 
 // destroys a target by reference
