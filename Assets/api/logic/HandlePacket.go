@@ -6,7 +6,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
-// handles routing the packet to the jhandling function
+// handles routing recieved packets based on the first byte
 func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (response []Packet, doTerminate bool) {
 	switch typeByte {
 
@@ -35,7 +35,7 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (respons
 		{
 			return HandleSetName(marshalledPacket, user)
 		}
-	case 'h':
+	case 'h': //hit a target
 		{
 			return HandleHitTarget(marshalledPacket, user)
 		}

@@ -7,7 +7,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
-// Handles a single "frame"(the players motion in an instant)
+// Handles the 'f' packet, which is whenever the client wishes to update their position and velocity with the server
 func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	//create the frame object and unmarshal the JSON into it
 	var frame Frame

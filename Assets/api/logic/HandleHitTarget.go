@@ -7,6 +7,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
+// Handles the 'h' packet, which is sent whenever the client hits a target
 func HandleHitTarget(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	targetID, err := strconv.Atoi(string(pak))
 

@@ -4,7 +4,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
-// handles the player leaving a game
+// handles the 'l' packet, which is called whenever a player wants to leave their current game
 func HandleLeaveGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	//leave the game
 	user.LeaveGame()
