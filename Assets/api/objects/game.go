@@ -119,23 +119,30 @@ func (g *Game) StartGame() {
 // runs a game
 func (g *Game) run() {
 	for {
-		//get lock
-		g.DestructionLock.Lock()
-		defer g.DestructionLock.Unlock()
-
-		//check if disposed
-		if g.State != GAME_RUNNING {
+		if g.Tick() {
 			return
 		}
-
-		select {
-		case <-g.updateTicker.C: //wait for update
-			g.Update(TICK_INTERVAL_SECONDS) //this is being updated directly after, if the game is disposed between the ops this will panic, look into mutexes to stop this
-		case <-g.Done:
-			return
-		}
-
 	}
+}
+
+func (g *Game) Tick() (doExit bool) {
+	//get lock
+	g.DestructionLock.Lock()
+	defer g.DestructionLock.Unlock()
+
+	//check if disposed
+	if g.State != GAME_RUNNING {
+		return true
+	}
+
+	select {
+	case <-g.updateTicker.C: //wait for update
+		g.Update(TICK_INTERVAL_SECONDS) //this is being updated directly after, if the game is disposed between the ops this will panic, look into mutexes to stop this
+	case <-g.Done:
+		return true
+	}
+
+	return false
 }
 
 // updates a game, should be called based on the server tick rate
