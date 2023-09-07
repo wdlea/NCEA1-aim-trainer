@@ -79,6 +79,11 @@ func HandleBytes(dataChan <-chan byte, packetChan chan<- Packet) {
 		//read the type byte from the channel
 		typeByte, open := <-dataChan
 
+		if typeByte == PACKET_SEPERATOR {
+			fmt.Println("Type Byte sent at start of packet")
+			continue
+		}
+
 		//if the channel has been closed, cascade down
 		if !open {
 			return
