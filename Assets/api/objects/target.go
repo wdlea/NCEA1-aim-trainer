@@ -16,6 +16,8 @@ type Target struct {
 
 // spawns a target
 func SpawnTarget(g *Game) {
+	fmt.Println("Spawning target")
+
 	t := new(Target)
 
 	//todo randomise position and velocity
