@@ -3,6 +3,7 @@ package objects
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 
 	ll "github.com/wdlea/GOGenericLinkedList" //also, this code was by me too, becuase GOs builtin implemtation was bad
 )
@@ -20,7 +21,11 @@ func SpawnTarget(g *Game) {
 
 	t := new(Target)
 
-	//todo randomise position and velocity
+	t.X = (rand.Float64() - 0.5) * 200
+	t.Y = (rand.Float64() - 0.5) * 200
+
+	t.Dx = (rand.Float64() - 0.5) * 50
+	t.Dy = (rand.Float64() - 0.5) * 50
 
 	t.llNode = g.Targets.AddLast(t)
 
