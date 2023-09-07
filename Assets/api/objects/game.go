@@ -87,7 +87,6 @@ func (g *Game) StartGame() {
 	//set state and start the timer
 	g.State = GAME_RUNNING
 	timer := time.NewTimer(GAME_DURATION)
-
 	g.Done = make(chan int, 1)
 
 	//start thread to listen for g.Done and the timer and quit the game once finished
@@ -95,11 +94,13 @@ func (g *Game) StartGame() {
 		for {
 			select {
 			case <-C:
+				fmt.Println("Timer expired, stopping game")
 				g.Done <- 0
 				return
 
 			default:
 				if len(g.Done) > 0 {
+					fmt.Println("game stopped not via timeout")
 					return
 				}
 			}
@@ -112,11 +113,7 @@ func (g *Game) StartGame() {
 	//actually start the game logic
 	go g.run()
 
-	for _, player := range g.Players {
-		player.SendBroadcast(Packet{
-			Type: 'S',
-		})
-	}
+	g.SendBroadcastAll(Packet{Type: 'S'})
 }
 
 // runs a game

@@ -41,7 +41,7 @@ func HandlePacket(typeByte byte, marshalledPacket []byte, user *Player) (respons
 		}
 	default:
 		{
-			fmt.Printf("Invalid packet type requested: %s, terminating connection\n", string(typeByte))
+			fmt.Printf("Invalid packet type requested: '%s'(%d), terminating connection\n", string(typeByte), int(typeByte))
 			doTerminate = true
 		}
 	}
