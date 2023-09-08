@@ -687,7 +687,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   me: {fileID: 845566657}
-  otherPlayerPrefab: {fileID: 7555065457411099261, guid: c8a22651611d8574c809e425956873f1, type: 3}
+  targetPrefab: {fileID: 7589095509367861455, guid: bf5b92687d16f284fb949adf0318551e, type: 3}
+  otherPlayerPrefab: {fileID: 6318429501268879464, guid: c8a22651611d8574c809e425956873f1, type: 3}
   playerParent: {fileID: 1366953891}
 --- !u!4 &2072444181
 Transform:

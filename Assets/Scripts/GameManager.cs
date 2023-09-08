@@ -15,8 +15,11 @@ public class GameManager : MonoBehaviour
 
     private Dictionary<string, Entity> players = new();
 
-    [SerializeField] private Entity otherPlayerPrefab;
+    [SerializeField] private Target targetPrefab;
+    [SerializeField] private OtherPlayer otherPlayerPrefab;
+
     [SerializeField] private Transform playerParent;
+    
 
     Promise<Game>? gamePromise;
 
@@ -25,6 +28,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Methods.onTargetSpawn = OnTargetSpawn;
+        players = new();
     }
 
     private void Update()
@@ -63,8 +67,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void OnTargetSpawn(Target target)
+    void OnTargetSpawn(api.objects.Target target)
     {
-        Debug.Log("Target spawned! ID: " + target.ID.ToString());
+        Target t = Instantiate(targetPrefab, playerParent);
+        t.Tar = target;
+        t.Update();
     }
 }
