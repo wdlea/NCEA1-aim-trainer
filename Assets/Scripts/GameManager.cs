@@ -22,6 +22,11 @@ public class GameManager : MonoBehaviour
 
     public static string myName = "";//todo, keep track of this in methods instead of here
 
+    private void Awake()
+    {
+        Methods.onTargetSpawn = OnTargetSpawn;
+    }
+
     private void Update()
     {
         if (Methods.IsGameStarted)
@@ -56,5 +61,10 @@ public class GameManager : MonoBehaviour
                 players[player.Name].Frame = player;
             }
         }
+    }
+
+    void OnTargetSpawn(Target target)
+    {
+        Debug.Log("Target spawned! ID: " + target.ID.ToString());
     }
 }
