@@ -11,11 +11,11 @@ using UnityEngine;
 /// </summary>
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] MyController me;
+    [SerializeField] Me me;
 
-    private Dictionary<string, OtherPlayer> players = new();
+    private Dictionary<string, Entity> players = new();
 
-    [SerializeField] private OtherPlayer otherPlayerPrefab;
+    [SerializeField] private Entity otherPlayerPrefab;
     [SerializeField] private Transform playerParent;
 
     Promise<Game>? gamePromise;
