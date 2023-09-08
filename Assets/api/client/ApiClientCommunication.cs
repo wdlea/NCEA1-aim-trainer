@@ -296,7 +296,7 @@ namespace api
 
         ClientBoundBroadcast = 'B',
 
-        BroadcastStartGame = 'S',
+        
 
         ServerBoundTerminate = 't',
     }

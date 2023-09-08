@@ -6,6 +6,12 @@ namespace api
     {
         public static bool IsGameStarted { get; private set; }
 
+        public enum Broadcast
+        {
+            StartGame = 'S',
+            SpawnTarget = 'T',
+        }
+
         /// <summary>
         /// Handles a broadcast packet
         /// </summary>
@@ -15,14 +21,20 @@ namespace api
         internal static void HandleBroadcast(Packet newPacket)
         {
             //do stuff with packet
-            switch (newPacket.type)
+            switch ((Broadcast)newPacket.type)
             {
-                case PacketType.BroadcastStartGame:
+                case Broadcast.StartGame:
                     {
                         Debug.Log("Started Game");
                         IsGameStarted = true;
                         break;
                     }
+                case Broadcast.SpawnTarget:
+                    {
+
+                        break;
+                    }
+
 
                 default:
                     {
