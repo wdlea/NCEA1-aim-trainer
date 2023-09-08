@@ -8,9 +8,8 @@ namespace api.objects
     /// Used to deserialize the Target obejct from the server
     /// </summary>
     [Serializable]
-    public class Target
+    public class Target : Frame
     {
-        public float X, Y, Dx, Dy;
         public int ID;
     }
 }
