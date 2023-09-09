@@ -11,16 +11,25 @@ using UnityEngine;
 /// </summary>
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] MyController me;
+    [SerializeField] Me me;
 
-    private Dictionary<string, OtherPlayer> players = new();
+    private Dictionary<string, Entity> players = new();
 
+    [SerializeField] private Target targetPrefab;
     [SerializeField] private OtherPlayer otherPlayerPrefab;
+
     [SerializeField] private Transform playerParent;
+    
 
     Promise<Game>? gamePromise;
 
     public static string myName = "";//todo, keep track of this in methods instead of here
+
+    private void Awake()
+    {
+        Methods.onTargetSpawn = OnTargetSpawn;
+        players = new();
+    }
 
     private void Update()
     {
@@ -56,5 +65,12 @@ public class GameManager : MonoBehaviour
                 players[player.Name].Frame = player;
             }
         }
+    }
+
+    void OnTargetSpawn(api.objects.Target target)
+    {
+        Target t = Instantiate(targetPrefab, playerParent);
+        t.Tar = target;
+        t.Update();
     }
 }

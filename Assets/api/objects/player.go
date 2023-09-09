@@ -16,6 +16,8 @@ type Player struct {
 	X, Y, Dx, Dy float64
 
 	Conn net.Conn `json:"-"`
+
+	Score float64
 }
 
 // represents an instant of the players motion

@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -10,9 +11,11 @@ import (
 
 type GameState int
 
-const TICK_RATE = 40 //hz
+const TICK_RATE = 20 //hz
 const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
+
+const TARGET_SPAWN_CHANCE = float64(.2) //per second(s^-1)
 
 const GAME_DURATION = 5 * time.Minute
 
@@ -53,6 +56,9 @@ type Game struct {
 
 	Name string
 
+	Targets         ll.LinkedList[*Target] `json:"-"` //dont serialize, the data will be shared using broadcasts
+	CurrentTargetID float64                `json:"-"`
+
 	DestructionLock sync.Mutex   `json:"-"`
 	Done            chan int     `json:"-"`
 	updateTicker    *time.Ticker `json:"-"`
@@ -81,7 +87,6 @@ func (g *Game) StartGame() {
 	//set state and start the timer
 	g.State = GAME_RUNNING
 	timer := time.NewTimer(GAME_DURATION)
-
 	g.Done = make(chan int, 1)
 
 	//start thread to listen for g.Done and the timer and quit the game once finished
@@ -89,11 +94,13 @@ func (g *Game) StartGame() {
 		for {
 			select {
 			case <-C:
+				fmt.Println("Timer expired, stopping game")
 				g.Done <- 0
 				return
 
 			default:
 				if len(g.Done) > 0 {
+					fmt.Println("game stopped not via timeout")
 					return
 				}
 			}
@@ -106,39 +113,47 @@ func (g *Game) StartGame() {
 	//actually start the game logic
 	go g.run()
 
-	for _, player := range g.Players {
-		player.SendBroadcast(Packet{
-			Type: 'S',
-		})
-	}
+	g.SendBroadcastAll(Packet{Type: 'S'})
 }
 
 // runs a game
 func (g *Game) run() {
 	for {
-		//get lock
-		g.DestructionLock.Lock()
-		defer g.DestructionLock.Unlock()
-
-		//check if disposed
-		if g.State != GAME_RUNNING {
+		if g.Tick() {
 			return
 		}
-
-		select {
-		case <-g.updateTicker.C: //wait for update
-			g.Update(TICK_INTERVAL_SECONDS) //this is being updated directly after, if the game is disposed between the ops this will panic, look into mutexes to stop this
-		case <-g.Done:
-			return
-		}
-
 	}
+}
+
+func (g *Game) Tick() (doExit bool) {
+	//get lock
+	g.DestructionLock.Lock()
+	defer g.DestructionLock.Unlock()
+
+	//check if disposed
+	if g.State != GAME_RUNNING {
+		return true
+	}
+
+	select {
+	case <-g.updateTicker.C: //wait for update
+		g.Update(TICK_INTERVAL_SECONDS) //this is being updated directly after, if the game is disposed between the ops this will panic, look into mutexes to stop this
+	case <-g.Done:
+		return true
+	}
+
+	return false
 }
 
 // updates a game, should be called based on the server tick rate
 func (g *Game) Update(deltatime float64) {
 	for _, player := range g.Players {
 		player.Update(deltatime)
+	}
+
+	//roll chance, proportional to deltaTime so that the spawn chance is uniform
+	if rand.Float64() < TARGET_SPAWN_CHANCE*deltatime {
+		SpawnTarget(g)
 	}
 }
 
@@ -174,5 +189,12 @@ func (g *Game) removeFromPlayerList(p *Player) {
 	} else {
 		//otherwise print an error to console
 		fmt.Println("Tried to remove player not in game")
+	}
+}
+
+// sends a broadcast to all players
+func (g *Game) SendBroadcastAll(p Packet) {
+	for _, player := range g.Players {
+		player.SendBroadcast(p)
 	}
 }

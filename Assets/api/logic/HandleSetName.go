@@ -6,7 +6,7 @@ import (
 
 const MAX_NAME_LENGTH int = 15
 
-// handles the player setting their name
+// handles the 'n' packet, which is called the client wants to set their name
 func HandleSetName(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 
 	//if they are in a game return an error
