@@ -296,7 +296,9 @@ namespace api
 
         ClientBoundBroadcast = 'B',
 
-        
+        ServerBoundHitTarget = 'h',
+        ClientBoundHitTargetResponse = 'H',
+
 
         ServerBoundTerminate = 't',
     }
