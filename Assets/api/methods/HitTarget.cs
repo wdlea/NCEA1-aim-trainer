@@ -10,7 +10,7 @@ namespace api
         /// Marks a target as "hit" on the server
         /// </summary>
         /// <param name="ID">The id of the target I shot</param>
-        public static void HitTarget(int ID)
+        public static void HitTarget(int ID)  
         {
             Packet packet = new Packet(
                 PacketType.ServerBoundHitTarget,
