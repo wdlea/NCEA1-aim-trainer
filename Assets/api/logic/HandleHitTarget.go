@@ -29,8 +29,10 @@ func HandleHitTarget(pak []byte, user *Player) (response []Packet, doTerminate b
 
 	if !hit {
 		returnValue = 0
-		fmt.Println("Target was attempted to be destroyed that was not present in game") //dont error out, but log it becuase that could help me deubg
+		fmt.Println("Target was attempted to be destroyed that was not present in game") //dont error out, but log it becuase that could help me deubug
 	}
+
+	user.Score += float64(returnValue)
 
 	response = append(response,
 		Packet{
