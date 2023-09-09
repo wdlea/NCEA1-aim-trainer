@@ -4,7 +4,7 @@ import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
 )
 
-// Handles a player creating a game
+// Handles the 'c' packet, which is send whenever the player tries to create a game
 func HandleCreateGame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
 	//if the player does not have a name send an error
 	if len(user.Name) <= 0 {

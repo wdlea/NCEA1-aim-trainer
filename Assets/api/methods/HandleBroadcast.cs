@@ -6,24 +6,38 @@ namespace api
     {
         public static bool IsGameStarted { get; private set; }
 
+        public enum Broadcast
+        {
+            StartGame = 'S',
+            SpawnTarget = 'T',
+        }
+
+        public delegate void OnTargetSpawn(objects.Target target);
+        public static OnTargetSpawn onTargetSpawn;
+
         /// <summary>
         /// Handles a broadcast packet
         /// </summary>
-        /// <param name="newPacket">The broadcast packet, 
+        /// <param name="broadcast">The broadcast packet, 
         /// note that this will be transfomed to omit the
         /// first 'B'</param>
-        internal static void HandleBroadcast(Packet newPacket)
+        internal static void HandleBroadcast(Packet broadcast)
         {
             //do stuff with packet
-            switch (newPacket.type)
+            switch ((Broadcast)broadcast.type)
             {
-                case PacketType.BroadcastStartGame:
+                case Broadcast.StartGame:
                     {
                         Debug.Log("Started Game");
                         IsGameStarted = true;
                         break;
                     }
-
+                case Broadcast.SpawnTarget:
+                    {
+                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.message);
+                        onTargetSpawn(spawned);
+                        break;
+                    }
                 default:
                     {
                         throw new UnexpectedPacketException();

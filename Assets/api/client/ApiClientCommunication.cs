@@ -296,7 +296,9 @@ namespace api
 
         ClientBoundBroadcast = 'B',
 
-        BroadcastStartGame = 'S',
+        ServerBoundHitTarget = 'h',
+        ClientBoundHitTargetResponse = 'H',
+
 
         ServerBoundTerminate = 't',
     }
