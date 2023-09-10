@@ -35,13 +35,14 @@ public class GameManager : MonoBehaviour
     {
         Methods.onTargetSpawn = OnTargetSpawn;
         players = new();
-
-
-        timeLeft.text = "??:??";
     }
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+    void Start()
+    {
+        timeLeft.text = "??:??";
+    }
 
     private void Update()
     {
