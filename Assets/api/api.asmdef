@@ -3,10 +3,7 @@
     "rootNamespace": "api",
     "references": [],
     "includePlatforms": [],
-    "excludePlatforms": [
-        "tvOS",
-        "WebGL"
-    ],
+    "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
