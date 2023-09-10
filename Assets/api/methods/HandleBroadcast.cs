@@ -35,7 +35,7 @@ namespace api
                 case Broadcast.SpawnTarget:
                     {
                         objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.message);
-                        onTargetSpawn(spawned);
+                        onTargetSpawn?.Invoke(spawned);
                         break;
                     }
                 default:
