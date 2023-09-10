@@ -14,8 +14,10 @@ public class Target : Prop
     }
 
     [SerializeField] int ID;
+
     public void OnHit()
     {
         Debug.Log("Ouch! ID: " + ID.ToString());
+        api.Methods.HitTarget(this.ID);
     }
 }
