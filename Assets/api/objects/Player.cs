@@ -9,5 +9,6 @@ namespace api.objects
     public class Player : Frame
     {
         public string Name;
+        public int Score;
     }
 }
