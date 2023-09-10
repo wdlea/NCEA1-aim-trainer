@@ -30,21 +30,18 @@ public class GameManager : MonoBehaviour
     public static string myName = "";//todo, keep track of this in methods instead of here
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    
-    public GameManager() : base()
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+    public GameManager() : base()//I know that this is bad Unity code(I'm meant to use Awake()), but Unity wasnt keeping its side of the deal and didn't actually call the code
     {
         Methods.onTargetSpawn = OnTargetSpawn;
-    }
-
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-    private void Awake()
-    {
-        
         players = new();
+
 
         timeLeft.text = "??:??";
     }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 
     private void Update()
     {
