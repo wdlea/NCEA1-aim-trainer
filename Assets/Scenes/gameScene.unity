@@ -870,6 +870,8 @@ MonoBehaviour:
   targetPrefab: {fileID: 7589095509367861455, guid: bf5b92687d16f284fb949adf0318551e, type: 3}
   otherPlayerPrefab: {fileID: 6318429501268879464, guid: c8a22651611d8574c809e425956873f1, type: 3}
   playerParent: {fileID: 1366953891}
+  myScore: {fileID: 2131953070}
+  timeLeft: {fileID: 1858600831}
 --- !u!4 &2072444181
 Transform:
   m_ObjectHideFlags: 0
