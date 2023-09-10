@@ -29,12 +29,21 @@ public class GameManager : MonoBehaviour
 
     public static string myName = "";//todo, keep track of this in methods instead of here
 
-    private void Awake()
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    
+    public GameManager() : base()
     {
         Methods.onTargetSpawn = OnTargetSpawn;
+    }
+
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    private void Awake()
+    {
+        
         players = new();
 
-        timeLeft.text = "??:??"
+        timeLeft.text = "??:??";
     }
 
     private void Update()
