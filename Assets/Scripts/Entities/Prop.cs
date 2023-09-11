@@ -3,7 +3,7 @@
 /// <summary>
 /// A prop is an entity controlled exclusively by the server
 /// </summary>
-public class Prop : Entity {
+public abstract class Prop : Entity {
     public void Update()
     {
         PreUpdatePosition();
@@ -17,11 +17,11 @@ public class Prop : Entity {
     /// <summary>
     /// Called before the props new position is calculated
     /// </summary>
-    protected virtual void PreUpdatePosition() { }
+    protected abstract void PreUpdatePosition();
 
     /// <summary>
     /// Called after the props new position is calculated
     /// </summary>
-    protected virtual void PostUpdatePosition() { }
+    protected abstract void PostUpdatePosition();
 }
 
