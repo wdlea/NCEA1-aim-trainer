@@ -28,4 +28,13 @@ public class Target : Prop
     {
 
     }
+
+    /// <summary>
+    /// Here so i can add animations and custom behavior
+    /// </summary>
+    public void DestroyTarget()
+    {
+        
+        Destroy(this.gameObject);
+    }
 }
