@@ -41,9 +41,14 @@ public class OtherPlayer : Prop {
         return choices[choiceIndex];
     }
 
-    private void Update()
+    protected override void PreUpdatePosition()
     {
         scoreText.text = player.Score.ToString().PadLeft(3, '0');
         nameText.text = player.Name;
+    }
+
+    protected override void PostUpdatePosition()
+    {
+        
     }
 }
