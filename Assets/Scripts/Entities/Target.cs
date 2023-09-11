@@ -20,4 +20,14 @@ public class Target : Prop
         Debug.Log("Ouch! ID: " + ID.ToString());
         api.Methods.HitTarget(this.ID);
     }
+
+    protected override void PreUpdatePosition()
+    {
+
+    }
+
+    protected override void PostUpdatePosition()
+    {
+
+    }
 }
