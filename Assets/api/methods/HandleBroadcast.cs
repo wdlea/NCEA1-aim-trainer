@@ -10,7 +10,7 @@ namespace api
         {
             StartGame = 'S',
             SpawnTarget = 'T',
-            HitTarget = 'H'
+            HitTarget = 'D'
         }
 
         public delegate void OnTargetSpawn(objects.Target target);
