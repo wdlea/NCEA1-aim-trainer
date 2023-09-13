@@ -93,7 +93,6 @@ func (p *Player) LeaveGame() {
 
 // apply a frame to a pleyer
 func (p *Player) ApplyFrame(f Frame) {
-	fmt.Printf("Player %s applying frame\n", p.Name)
 
 	//add the frame
 	p.X, p.Y, p.Dx, p.Dy = f.X, f.Y, f.Dx, f.Dy
