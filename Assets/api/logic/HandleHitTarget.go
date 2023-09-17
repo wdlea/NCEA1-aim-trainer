@@ -37,13 +37,6 @@ func HandleHitTarget(pak []byte, user *Player) (response []Packet, doTerminate b
 	} else {
 		//broadcast that the target is now hit
 		fmt.Println("and hit.")
-
-		user.Game.SendBroadcastAll(
-			Packet{
-				Type:    'H',
-				Content: pak, //if the packet resolved to a hit, this will be called and valid
-			},
-		)
 	}
 
 	user.Score += float64(returnValue)
