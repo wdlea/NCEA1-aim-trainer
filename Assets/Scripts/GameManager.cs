@@ -87,6 +87,8 @@ public class GameManager : MonoBehaviour
         Target t = Instantiate(targetPrefab, playerParent);
         t.Tar = target;
         t.Update();
+
+        targets[target.ID] = t;
     }
 
     void OnTargetDestroy(int id)

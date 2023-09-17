@@ -10,7 +10,7 @@ namespace api
         {
             StartGame = 'S',
             SpawnTarget = 'T',
-            HitTarget = 'D'
+            HitTarget = 'H'
         }
 
         public delegate void OnTargetSpawn(objects.Target target);
@@ -47,8 +47,7 @@ namespace api
                         int id;
                         try
                         {
-                            id = int.Parse(broadcast.message);
-
+                            id = (int)float.Parse(broadcast.message);
                         }
                         catch
                         {
