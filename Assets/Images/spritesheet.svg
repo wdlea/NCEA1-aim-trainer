@@ -20,21 +20,46 @@
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
-     id="defs1" />
+     id="defs1">
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect6"
+       is_visible="true"
+       lpeversion="1.3"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false"
+       uniform="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect5"
+       is_visible="true"
+       lpeversion="1.3"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false"
+       uniform="false" />
+  </defs>
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#323232"
      bordercolor="#000000"
      borderopacity="0.3"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98974181"
-     inkscape:cx="776.46512"
-     inkscape:cy="226.82683"
+     inkscape:zoom="0.45254834"
+     inkscape:cx="878.35921"
+     inkscape:cy="449.67572"
      inkscape:document-units="mm"
      inkscape:showpageshadow="0"
      inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#d1d1d1"
+     inkscape:deskcolor="#1d1d1d"
      showgrid="true"
      showguides="true"
      inkscape:window-width="1920"
@@ -147,5 +172,65 @@
        cx="280"
        cy="40"
        r="4.9999962" />
+    <g
+       id="g12"
+       transform="matrix(1.141023,0,0,1.141023,9.8410919,-9.5250533)">
+      <g
+         id="g1"
+         transform="translate(-13.568535,13.521349)">
+        <circle
+           style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="path2-4"
+           cx="40"
+           cy="120"
+           r="20.853502" />
+        <path
+           style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 43.93973,120 c 28.253719,0 28.253719,0 28.253719,0"
+           id="path8-1" />
+        <path
+           style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 39.999998,116.09673 c 0,-28.15923 0,-28.15923 0,-28.15923 v 0 0"
+           id="path9-4" />
+        <path
+           style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="M 36.00223,120 C 7.8430048,120 7.8430048,120 7.8430048,120"
+           id="path10-8" />
+        <path
+           style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 39.999998,124.31771 c 0,28.44271 0,28.44271 0,28.44271"
+           id="path11-2" />
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-size:63.3805px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono, Normal';font-variant-position:super;fill:#ffffff;stroke-width:4.03471;stroke-linecap:round;stroke-linejoin:round"
+         x="23.058949"
+         y="186.2291"
+         id="text1"><tspan
+           sodipodi:role="line"
+           id="tspan1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:63.3805px;font-family:Recharge;-inkscape-font-specification:'Recharge, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:4.03471"
+           x="23.058949"
+           y="186.2291">Quark</tspan></text>
+      <path
+         style="fill:#ffffff;stroke-width:10;stroke-linecap:round;stroke-linejoin:round"
+         d="m 50.864732,191.91205 c 0,0 207.973278,0.43849 207.973278,0.43849"
+         id="path5"
+         inkscape:path-effect="#path-effect5"
+         inkscape:original-d="m 50.864732,191.91205 207.973278,0.43849" />
+      <path
+         style="fill:#ffffff;stroke-width:10;stroke-linecap:round;stroke-linejoin:round"
+         d="m 31.212565,190.58268 c 0,0 236.678055,-0.41341 236.678055,-0.41341"
+         id="path6"
+         inkscape:path-effect="#path-effect6"
+         inkscape:original-d="M 31.212565,190.58268 267.89062,190.16927" />
+      <rect
+         style="fill:#ffffff;stroke-width:9.62554;stroke-linecap:round;stroke-linejoin:round"
+         id="rect12"
+         width="204.75719"
+         height="1.74278"
+         x="65.168839"
+         y="185.7231" />
+    </g>
   </g>
 </svg>

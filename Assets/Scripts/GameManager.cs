@@ -24,24 +24,27 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text myScore;
     [SerializeField] private Text timeLeft;
 
+    Dictionary<int, Target> targets;//I know an array is what you think i need, but if i use a List, the length will consume much more data than it actually needs
+
 
     Promise<Game>? gamePromise;
 
     public static string myName = "";//todo, keep track of this in methods instead of here
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
     public GameManager() : base()//I know that this is bad Unity code(I'm meant to use Awake()), but Unity wasnt keeping its side of the deal and didn't actually call the code
     {
         Methods.onTargetSpawn = OnTargetSpawn;
-        players = new();
-
-
-        timeLeft.text = "??:??";
+        Methods.onHitTarget = OnTargetDestroy;
     }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+    private void Start()
+    {
+        timeLeft.text = "??:??";
+        targets = new();
+        players = new();
+    }
 
     private void Update()
     {
@@ -84,5 +87,17 @@ public class GameManager : MonoBehaviour
         Target t = Instantiate(targetPrefab, playerParent);
         t.Tar = target;
         t.Update();
+
+        targets[target.ID] = t;
+    }
+
+    void OnTargetDestroy(int id)
+    {
+        if(targets.TryGetValue(id, out Target destroyed))
+        {
+            targets.Remove(id);
+
+            destroyed.DestroyTarget();
+        }
     }
 }

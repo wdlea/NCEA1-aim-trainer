@@ -61,7 +61,7 @@ func (g *Game) DestroyTarget(t *Target) {
 	t.llNode.Pop(&g.Targets)
 
 	g.SendBroadcastAll(Packet{
-		Type:    'D',
+		Type:    'H',
 		Content: []byte(fmt.Sprintf("%f", t.ID)),
 	})
 }
