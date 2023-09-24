@@ -10,10 +10,14 @@ namespace api
         {
             StartGame = 'S',
             SpawnTarget = 'T',
+            HitTarget = 'H'
         }
 
         public delegate void OnTargetSpawn(objects.Target target);
         public static OnTargetSpawn onTargetSpawn;
+
+        public delegate void OnHitTarget(int ID);
+        public static OnHitTarget onHitTarget;
 
         /// <summary>
         /// Handles a broadcast packet
@@ -36,6 +40,23 @@ namespace api
                     {
                         objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.message);
                         onTargetSpawn?.Invoke(spawned);
+                        break;
+                    }
+                case Broadcast.HitTarget:
+                    {
+                        int id;
+                        try
+                        {
+                            id = (int)float.Parse(broadcast.message);
+                        }
+                        catch
+                        {
+                            Debug.LogWarning("Unable to parse ID from server(trusted information source)");
+                            break;
+                        }
+
+                        onHitTarget(id);
+
                         break;
                     }
                 default:
