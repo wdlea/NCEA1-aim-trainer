@@ -93,7 +93,6 @@ func (p *Player) LeaveGame() {
 
 // apply a frame to a pleyer
 func (p *Player) ApplyFrame(f Frame) {
-	fmt.Printf("Player %s applying frame\n", p.Name)
 
 	//add the frame
 	p.X, p.Y, p.Dx, p.Dy = f.X, f.Y, f.Dx, f.Dy
@@ -121,8 +120,9 @@ const BROADCAST_PREFIX = 'B'
 
 // sends a broadcast to the player
 func (p *Player) SendBroadcast(message Packet) {
-	p.Conn.Write([]byte{BROADCAST_PREFIX})
-	p.Conn.Write([]byte{message.Type})
-	p.Conn.Write(message.Content)
-	p.Conn.Write([]byte{'\n'})
+	p.Conn.Write([]byte(fmt.Sprintf(
+		string(BROADCAST_PREFIX)+"%s%s\n",
+		string(message.Type),
+		message.Content,
+	)))
 }
