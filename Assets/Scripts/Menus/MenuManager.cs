@@ -44,7 +44,8 @@ public class MenuManager : MonoBehaviour
     {
         if (!Client.IsConnected)
         {
-            Client.JoinServer(surrogate);//blocks until joined so it will work or throw error
+            //TODO: Handle error from Client.JoinServer();
+            Client.JoinServer();//blocks until joined so it will work or throw error
         }
 
         if(namePromise != null && namePromise.Finished)
