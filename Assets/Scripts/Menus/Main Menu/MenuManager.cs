@@ -2,6 +2,7 @@ using api;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,13 +20,29 @@ public class MenuManager : MonoBehaviour
 
     [SerializeField] Surrogate surrogate;
 
-    [SerializeField] private InputField nameInput;
-    [SerializeField] private InputField codeInput;
+    [SerializeField] private TMP_InputField nameInput;
+    
+    [SerializeField] private Button nameReloadButton;
+    [SerializeField] private Button nameProceedButton;
 
-    [SerializeField] private Button joinButton;
-    [SerializeField] private Button hostButton;
+    [SerializeField] private Image serverConnectionIndicator;
+    [SerializeField] private Image nameStatusIndicator;
 
-    [SerializeField] private Indicator nameIndicator;
+    [Serializable] struct IndicatorStatus
+    {
+        public Color statusColour;
+        public Sprite statusIcon;
+        public bool reloadAllowed;
+        public bool proceedAllowed;
+    }
+    [SerializeField] private IndicatorStatus nameStatusPending;
+    [SerializeField] private IndicatorStatus nameStatusAwaiting;
+    [SerializeField] private IndicatorStatus nameStatusError;
+    [SerializeField] private IndicatorStatus nameStatusCompleted;
+
+    [SerializeField] private IndicatorStatus connectionStatusFailure;
+    [SerializeField] private IndicatorStatus connectionStatusSuccess;
+
 
     [SerializeField] private int limboSceneIndex;
 
@@ -34,97 +51,96 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        nameInput.onEndEdit.AddListener(ApplyName);
-        joinButton.onClick.AddListener(JoinGame);
-        hostButton.onClick.AddListener(HostGame);
+        StartCoroutine(nameof(AttemptJoinCoroutine));
+
+        SetNamePending();
+
+        nameInput.onValueChanged.AddListener(SetNamePending);
+
+        nameReloadButton.onClick.AddListener(ApplyName);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!Client.IsConnected)
+        if(namePromise is not null && namePromise.Finished)
         {
-            //TODO: Handle error from Client.JoinServer();
-            Client.JoinServer();//blocks until joined so it will work or throw error
-        }
+            if(namePromise.Get(out string? newName) is null && newName != null)
+            {
+                GameManager.myName = newName;
 
-        if(namePromise != null && namePromise.Finished)
-        {
-            if (namePromise.Get(out string? playerName) is Exception e)
-            {
-                throw e;
+                SetStatus(nameStatusIndicator, nameStatusCompleted);
+                SetStatus(nameReloadButton, nameProceedButton, nameStatusCompleted);
             }
-            else if (playerName is not null)
+            else
             {
-                GameManager.myName = playerName;
-                nameIndicator.State = Indicator.IndicatorState.Completed;
+                Debug.Log(namePromise.Get(out _));//log error
+
+                SetStatus(nameStatusIndicator, nameStatusError);
+                SetStatus(nameReloadButton, nameProceedButton, nameStatusError);
             }
-            namePending = false;
 
             namePromise = null;
         }
 
-        if(joinPromise != null && joinPromise.Finished)
-        {
-            if(joinPromise.Get(out bool success) is Exception e)
-            {
-                throw e;
-            }
-            else if(success)
-            {
-                SceneManager.LoadScene(limboSceneIndex);
-            }
-            else
-            {
-                throw new Exception("Achievement unlocked: How did we get here?");//undefined behavior
-            }
-            joinPromise = null;
-        }
 
-        if(hostPromise != null && hostPromise.Finished)
-        {
-            if (hostPromise.Get(out string? code) is Exception e)
-            {
-                throw e;
-            }
-            else if(code is not null)
-            {
-                SceneManager.LoadScene(limboSceneIndex);
-                Debug.Log(code);
-            }
-            else
-            {
-                throw new Exception("Achievement unlocked: How did we get here?");//undefined behavior
-            }
-            hostPromise = null;
-        }
-
-        if(namePromise != null || joinPromise != null || hostPromise != null)//if there are ANY actions pending
-        {
-            //disable buttons
-            joinButton.interactable = false;
-            hostButton.interactable = false;
-        }
-        else
-        {
-            //otherwise keep them enabled
-            joinButton.interactable = true;
-            hostButton.interactable = true;
-        }
+        //set server connection indicator's status
+        //TODO: make the user get sent to the main menu when the server disconnects for whatever reason
+        SetStatus(serverConnectionIndicator, Client.IsConnected ? connectionStatusSuccess : connectionStatusFailure);
     }
 
-    public void ApplyName(string name)
+    public void ApplyName()
     {
+        string name = nameInput.text;
+        if (name.Length <= 0)
+            return;
+
         namePromise = Methods.SetName(name);
-        nameIndicator.State = Indicator.IndicatorState.Pending;
+
+        SetStatus(nameStatusIndicator, nameStatusPending);
+        SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
+
         namePending = true;
     }
-    public void JoinGame()
-    {
-        joinPromise = Methods.JoinGame(codeInput.text);
-    }
+
     public void HostGame()
     {
         hostPromise = Methods.CreateGame();
+    }
+
+    void SetStatus(Image indicator, IndicatorStatus status)
+    {
+        indicator.sprite = status.statusIcon;
+        indicator.color = status.statusColour;
+    }
+    void SetStatus(Button reload, Button proceed, IndicatorStatus status)
+    {
+        reload.interactable = status.reloadAllowed;
+        proceed.interactable = status.proceedAllowed;
+    }
+    
+    void SetNamePending()
+    {
+        SetStatus(nameStatusIndicator, nameStatusPending);
+        SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
+    }
+    void SetNamePending(object o) => SetNamePending();
+
+    IEnumerator AttemptJoinCoroutine()
+    {
+        while (true)
+        {
+            try
+            {
+                Client.JoinServer();
+                yield break;
+            }
+            catch(Exception e)
+            {
+                Debug.Log("Failed attempted connection: " + e.Message);
+            }
+
+            yield return new WaitForSeconds(1f);
+        }
     }
 }

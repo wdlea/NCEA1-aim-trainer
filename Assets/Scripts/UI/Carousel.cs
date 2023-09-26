@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Carousel : MonoBehaviour
 {
-    public float TargetPosition { set { dirty = true; targetPosition = value * -slideWidth; } get => targetPosition; }
+    public float TargetPosition { set { dirty = true; targetPosition = value; } get => targetPosition; }
     private bool dirty;
 
     [SerializeField] [Range(float.Epsilon, float.PositiveInfinity)] private float transitionDuration;
@@ -48,7 +48,7 @@ public class Carousel : MonoBehaviour
 
         float easedProgress = EaseInOutQuint(progress);
 
-        currentPosition = Mathf.Lerp(startTransitionPosition, targetPosition, easedProgress);
+        currentPosition = Mathf.Lerp(startTransitionPosition, targetPosition * -slideWidth, easedProgress);
 
         rectTransform.anchoredPosition = new Vector3(currentPosition, 0);
     }
