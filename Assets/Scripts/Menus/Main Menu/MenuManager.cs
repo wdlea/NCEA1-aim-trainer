@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,7 +14,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Manages the main menu of the game
 /// </summary>
-public class MenuManager : MonoBehaviour
+public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport 
 {
     Promise<string>? namePromise;
     Promise<bool>? joinPromise;
@@ -21,6 +23,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] Surrogate surrogate;
 
     [SerializeField] private TMP_InputField nameInput;
+    [SerializeField] private TMP_InputField codeInput;
     
     [SerializeField] private Button nameReloadButton;
     [SerializeField] private Button nameProceedButton;
@@ -43,15 +46,24 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private IndicatorStatus connectionStatusFailure;
     [SerializeField] private IndicatorStatus connectionStatusSuccess;
 
+    //allows me to stop the client from attempting to connect
+    [SerializeField] private bool groundClient = false;
+
 
     [SerializeField] private int limboSceneIndex;
 
     public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
+
+    public int callbackOrder => throw new NotImplementedException();
+
     static bool namePending = false;
 
     private void Start()
     {
-        StartCoroutine(nameof(AttemptJoinCoroutine));
+        if (groundClient)
+            Debug.LogWarning("Client is grounded, it will not attempt to connect to the server");
+        else
+            StartCoroutine(nameof(AttemptJoinCoroutine));
 
         SetNamePending();
 
@@ -86,7 +98,7 @@ public class MenuManager : MonoBehaviour
 
         //set server connection indicator's status
         //TODO: make the user get sent to the main menu when the server disconnects for whatever reason
-        SetStatus(serverConnectionIndicator, Client.IsConnected ? connectionStatusSuccess : connectionStatusFailure);
+        SetStatus(serverConnectionIndicator, groundClient || Client.IsConnected  ? connectionStatusSuccess : connectionStatusFailure);
     }
 
     public void ApplyName()
@@ -95,7 +107,15 @@ public class MenuManager : MonoBehaviour
         if (name.Length <= 0)
             return;
 
-        namePromise = Methods.SetName(name);
+        if (groundClient)
+        {
+            namePromise = new Promise<string>();
+            namePromise.Fulfil(name);
+        }
+        else
+        {
+            namePromise = Methods.SetName(name);
+        }
 
         SetStatus(nameStatusIndicator, nameStatusPending);
         SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
@@ -105,7 +125,19 @@ public class MenuManager : MonoBehaviour
 
     public void HostGame()
     {
+        if (groundClient)
+            throw new InvalidOperationException("Cannot host a game when you have grounded the client");
+
         hostPromise = Methods.CreateGame();
+    }
+
+    public void JoinGame()
+    {
+        if (groundClient)
+            throw new InvalidOperationException("Cannot join a game when you have grounded the client");
+
+        //force lowercase becasue server only accepts lowercase characters
+        joinPromise = Methods.JoinGame(codeInput.text.ToLower());
     }
 
     void SetStatus(Image indicator, IndicatorStatus status)
@@ -142,5 +174,11 @@ public class MenuManager : MonoBehaviour
 
             yield return new WaitForSeconds(1f);
         }
+    }
+
+    public void OnPreprocessBuild(BuildReport report)
+    {
+        //Make sure that the server is not grounded when I build it to save my sanity
+        groundClient = false;
     }
 }
