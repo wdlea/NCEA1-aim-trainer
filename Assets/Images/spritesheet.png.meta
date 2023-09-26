@@ -380,6 +380,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: curvy_arrow
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 1600
+        width: 800
+        height: 800
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2b41a3aca9e0494e95a22c503a5695b
+      internalID: -684580596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -393,6 +414,7 @@ TextureImporter:
     nameFileIdTable:
       awaiting: -916294746
       crosshair: 1575111705
+      curvy_arrow: -684580596
       exit_button: -684560606
       failure: -1443299172
       left_arrow: 286083391
