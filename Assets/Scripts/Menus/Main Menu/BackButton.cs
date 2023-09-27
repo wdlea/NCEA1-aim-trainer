@@ -12,6 +12,11 @@ public class BackButton : MonoBehaviour
 
     public void BackMenu() { 
         menuCarousel.TargetPosition = Mathf.Clamp(Mathf.Round(menuCarousel.TargetPosition - 1), 0, float.PositiveInfinity);
+        
+        while(onBackCalls.TryDequeue(out OnBack call))
+        {
+            call();
+        }
     }
 
     private void Update()
