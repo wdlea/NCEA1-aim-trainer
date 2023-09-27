@@ -15,6 +15,8 @@ public class Carousel : MonoBehaviour
     [SerializeField] [ReadOnlyEditor] private float startTransitionTime;
     [SerializeField] [ReadOnlyEditor] private float startTransitionPosition;
 
+    public float CurrentPosition => -currentPosition/slideWidth;
+
     RectTransform rectTransform;
 
     /// <summary>
