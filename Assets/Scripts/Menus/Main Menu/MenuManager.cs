@@ -118,7 +118,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
 
     private void CheckStartGame()
     {
-        if (Methods.IsGameStartedRunning)
+        if (Methods.IsGameRunning)
         {
             if (waitingForStart)
                 JoinGameScene();

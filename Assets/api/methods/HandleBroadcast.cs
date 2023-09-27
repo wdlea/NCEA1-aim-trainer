@@ -4,7 +4,7 @@ namespace api
 {
     public static partial class Methods
     {
-        public static bool IsGameStartedRunning { get; private set; }
+        public static bool IsGameRunning { get; private set; }
 
         public enum Broadcast
         {
@@ -33,7 +33,7 @@ namespace api
                 case Broadcast.StartGame:
                     {
                         Debug.Log("Started Game");
-                        IsGameStartedRunning = true;
+                        IsGameRunning = true;
                         break;
                     }
                 case Broadcast.SpawnTarget:

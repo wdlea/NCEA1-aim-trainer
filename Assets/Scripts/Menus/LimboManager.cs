@@ -31,7 +31,7 @@ public class LimboManager : MonoBehaviour
             codeText.text = "joining";
         }
 
-        if (Methods.IsGameStartedRunning)
+        if (Methods.IsGameRunning)
         {
             SceneManager.LoadScene(gameSceneIndex);
         }

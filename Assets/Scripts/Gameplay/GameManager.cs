@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Methods.IsGameStartedRunning)
+        if (Methods.IsGameRunning)
         {
             if (gamePromise == null)
                 gamePromise = Methods.SendFrame(me.Frame);
