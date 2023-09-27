@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace api
 {
     public static partial class Client
     {
-        const string SERVER_ADDR = "10.2.24.143";
+        const string SERVER_ADDR = "192.168.1.73";
         const int SERVER_PORT = 80;
 
         /// <summary>
@@ -33,10 +34,12 @@ namespace api
         /// anything as long as it doesnt get 
         /// destroyed when the server is running) 
         /// to use for spawning coroutines.</param>
-        public static void JoinServer(MonoBehaviour surrogate)
+        public static void JoinServer()
         {
             ServerEndpoint = new IPEndPoint(IPAddress.Parse(SERVER_ADDR), SERVER_PORT);
-            StartThreads(surrogate);
+            StartThreads(Surrogate.Instance);
+
+            Surrogate.onQuit.Enqueue(KillThreads);
         }
     }
 }

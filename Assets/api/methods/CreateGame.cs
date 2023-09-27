@@ -45,7 +45,7 @@ namespace api
             };
 
 
-            IsGameStarted = false;
+            IsGameRunning = false;
             IsHost = true;
             Client.EnqueueSend(packet, ticket);
 

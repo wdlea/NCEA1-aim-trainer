@@ -1,0 +1,17 @@
+{
+    "name": "CustomUI",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9bbf5395b44c6884abebd8b43df62af3",
+        "GUID:d96d7ff5619d67a41832ef096233f2e1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
