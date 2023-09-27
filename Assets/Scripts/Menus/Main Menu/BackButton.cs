@@ -7,7 +7,12 @@ public class BackButton : MonoBehaviour
     [SerializeField] private Carousel menuCarousel;
     [SerializeField] private Animator buttonAnimator;
 
-    public void BackMenu() => menuCarousel.TargetPosition = Mathf.Clamp(Mathf.Round(menuCarousel.TargetPosition - 1), 0, float.PositiveInfinity);
+    public delegate void OnBack();
+    public Queue<OnBack> onBackCalls;
+
+    public void BackMenu() { 
+        menuCarousel.TargetPosition = Mathf.Clamp(Mathf.Round(menuCarousel.TargetPosition - 1), 0, float.PositiveInfinity);
+    }
 
     private void Update()
     {
