@@ -10,6 +10,11 @@ public class BackButton : MonoBehaviour
     public delegate void OnBack();
     public Queue<OnBack> onBackCalls;
 
+    private void Start()
+    {
+        onBackCalls ??= new Queue<OnBack>();
+    }
+
     public void BackMenu() { 
         menuCarousel.TargetPosition = Mathf.Clamp(Mathf.Round(menuCarousel.TargetPosition - 1), 0, float.PositiveInfinity);
         

@@ -26,6 +26,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
     
     [SerializeField] private Button nameReloadButton;
     [SerializeField] private Button nameProceedButton;
+    [SerializeField] private Button hostGameButton;
+    [SerializeField] private Button joinGameButton;
 
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
@@ -59,6 +61,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
     [SerializeField] private BackButton backButton;
     [SerializeField] private Carousel UICarousel;
 
+    [SerializeField] private float limboCarouselPosition;
+
     [Header("Scenes")]
     [SerializeField] private int gameSceneIndex;
 
@@ -80,6 +84,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
 
         nameInput.onValueChanged.AddListener(SetNamePending);
         nameReloadButton.onClick.AddListener(ApplyName);
+        hostGameButton.onClick.AddListener(HostGame);
+        joinGameButton.onClick.AddListener(JoinGame);
     }
 
     void Update()
@@ -191,7 +197,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         }
     }
 
-    public void ApplyName()
+    private void ApplyName()
     {
         string name = nameInput.text;
         if (name.Length <= 0)
@@ -213,7 +219,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         namePending = true;
     }
 
-    public void HostGame()
+    private void HostGame()
     {
         if (groundClient)
             throw new InvalidOperationException("Cannot host a game when you have grounded the client");
@@ -226,7 +232,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         hostPromise = Methods.CreateGame();
     }
 
-    public void JoinGame()
+    private void JoinGame()
     {
         if (groundClient)
             throw new InvalidOperationException("Cannot join a game when you have grounded the client");
@@ -241,6 +247,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
 
     private void EnterLimbo()
     {
+        UICarousel.TargetPosition = limboCarouselPosition;
+
         waitingForStart = true;
         backButton.onBackCalls.Enqueue(ExitLimbo);
     }
