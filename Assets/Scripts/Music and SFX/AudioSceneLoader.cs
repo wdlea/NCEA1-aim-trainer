@@ -5,6 +5,8 @@ public class AudioSceneLoader : MonoBehaviour
 {
     [SerializeField] private int audioSceneIndex;
 
+    [SerializeField] AsyncOperation ao;
+
     private void Start()
     {
         if (Jukebox.Active == null)
@@ -13,6 +15,6 @@ public class AudioSceneLoader : MonoBehaviour
 
     private void LoadAudioScene()
     {
-        SceneManager.LoadScene(audioSceneIndex, LoadSceneMode.Additive);
+        SceneManager.LoadScene(audioSceneIndex,LoadSceneMode.Additive);
     }
 }
