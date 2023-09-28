@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MusicTrack : MonoBehaviour
+[CreateAssetMenu(fileName ="New Music Track", menuName ="Music Track")]
+public class MusicTrack : ScriptableObject
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public AudioClip audio;
+    public string artist;
+    public string trackName;
+    public string URL;
 }
