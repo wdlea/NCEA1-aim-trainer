@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class ScreenShaker : MonoBehaviour
 {
-    [SerializeField] private Camera _shakeCamera = Camera.main;
+    [SerializeField] private Camera _shakeCamera;
 
     public static bool ReducedMotion = false;
 
@@ -20,7 +20,20 @@ public class ScreenShaker : MonoBehaviour
         Instance = this;
     }
 
-    Vector3? _shakeOrigin = null;
+    private void Start()
+    {
+        ShakeOrigin = _shakeCamera.transform.position;
+    }
+
+    [ReadOnlyEditor] public Vector3 ShakeOrigin;
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Shake();
+        }
+    }
 
     /// <summary>
     /// Shakes the camera
@@ -29,22 +42,14 @@ public class ScreenShaker : MonoBehaviour
     /// <param name="movement">The maximum movement for the X and Y axis of each shake in M.</param>
     /// <param name="duration">The duration of the shaking in S.</param>
     /// <param name="resetTime">The duration of the reset in S.</param>
-    public async void Shake(float rate = 5f, float movement = 0.2f, float duration = 0.5f, float resetTime = 0.1f)
+    public async void Shake(float rate = 20f, float movement = 0.2f, float duration = 0.2f, float resetTime = 0.1f)
     {
         float startTime = Time.realtimeSinceStartup;
         float endime = startTime + duration;
 
-        float shakeDuration = 1 / rate;
+        float shakeDuration = 1f / rate;
 
         Transform shakeTransform = _shakeCamera.transform;
-
-        //keep this to use as backup
-        Vector3 myOrigin = shakeTransform.position;
-
-        bool doUnsetOrigin = _shakeOrigin is null;
-
-        //don't set other shakes origin unless they unset it
-        _shakeOrigin ??= myOrigin;
 
         while (Time.realtimeSinceStartup < endime)
         {
@@ -53,15 +58,13 @@ public class ScreenShaker : MonoBehaviour
 
             shakeEndTime = Mathf.Min(shakeEndTime, endime);
 
-
-
             Vector3 shakeOffset = new Vector3(
-                Random.Range(-movement, movement),
-                Random.Range(-movement, movement)
+                UnityEngine.Random.Range(-movement, movement),
+                UnityEngine.Random.Range(-movement, movement)
             );
 
             Vector3 startShakePos = shakeTransform.position;
-            Vector3 endShakePos = (_shakeOrigin ?? myOrigin) + shakeOffset;
+            Vector3 endShakePos = ShakeOrigin + shakeOffset;
 
             while(Time.realtimeSinceStartup < shakeEndTime)
             {
@@ -82,14 +85,11 @@ public class ScreenShaker : MonoBehaviour
         {
             float resetProgress = (Time.realtimeSinceStartup - startResetTime) / resetTime;
 
-            shakeTransform.position = Vector3.Lerp(startResetPos, (_shakeOrigin ?? myOrigin), resetProgress);
+            shakeTransform.position = Vector3.Lerp(startResetPos, ShakeOrigin, resetProgress);
 
             await Task.Yield();
         }
 
-        shakeTransform.position = (_shakeOrigin ?? myOrigin);
-
-        if (doUnsetOrigin)
-            _shakeOrigin = null;
+        shakeTransform.position = ShakeOrigin;
     }
 }
