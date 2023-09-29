@@ -6,9 +6,9 @@ namespace api
 {
     public static partial class Methods
     {
-        public static float? GAME_START_TIME = null;
+        public static float? GameStartInterval = null;
 
-        public static bool IsGameRunning { get; private set; }
+        public static bool IsGameRunning => GameStartInterval is not null && GameStartInterval <= 0;
 
         public enum Broadcast
         {
@@ -36,8 +36,8 @@ namespace api
             {
                 case Broadcast.StartGame:
                     {
-                        Debug.Log("Started Game");
-                        IsGameRunning = true;
+                        GameStartInterval = float.Parse(broadcast.content);
+
                         break;
                     }
                 case Broadcast.SpawnTarget:
