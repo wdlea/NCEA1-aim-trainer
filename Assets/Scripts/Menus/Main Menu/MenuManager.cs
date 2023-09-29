@@ -1,10 +1,7 @@
 using api;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,7 +11,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Manages the main menu of the game
 /// </summary>
-public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport 
+public class MenuManager : MonoBehaviour
 {
     Promise<string>? namePromise;
     Promise<bool>? joinPromise;
@@ -26,6 +23,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
     
     [SerializeField] private Button nameReloadButton;
     [SerializeField] private Button nameProceedButton;
+    [SerializeField] private Button hostGameButton;
+    [SerializeField] private Button joinGameButton;
 
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
@@ -59,14 +58,17 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
     [SerializeField] private BackButton backButton;
     [SerializeField] private Carousel UICarousel;
 
+    [SerializeField] private float limboCarouselPosition;
+
     [Header("Scenes")]
     [SerializeField] private int gameSceneIndex;
+    [SerializeField] private int menuSceneIndex;
 
     private bool waitingForStart = false;
 
     public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
 
-    public int callbackOrder => throw new NotImplementedException();
+    
 
     static bool namePending = false;
 
@@ -76,10 +78,11 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
     {
         StartJoinServer();
         SetNamePending();
-        StartLoadGame();
 
         nameInput.onValueChanged.AddListener(SetNamePending);
         nameReloadButton.onClick.AddListener(ApplyName);
+        hostGameButton.onClick.AddListener(HostGame);
+        joinGameButton.onClick.AddListener(JoinGame);
     }
 
     void Update()
@@ -87,18 +90,13 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         CheckPromises();
         SetServerStatusIndicator();
         CheckStartGame();
-    }
 
-    private void StartLoadGame()
-    {
-        gameScene = SceneManager.LoadSceneAsync(gameSceneIndex);
-        gameScene.allowSceneActivation = false;
     }
 
     private void JoinGameScene()
     {
-        gameScene.allowSceneActivation = true;//join ASAP
-        gameScene.allowSceneActivation = true;//join ASAP
+        SceneManager.LoadScene(gameSceneIndex, LoadSceneMode.Additive);
+        SceneManager.UnloadSceneAsync(menuSceneIndex);
     }
 
     private void StartJoinServer()
@@ -191,7 +189,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         }
     }
 
-    public void ApplyName()
+    private void ApplyName()
     {
         string name = nameInput.text;
         if (name.Length <= 0)
@@ -213,7 +211,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         namePending = true;
     }
 
-    public void HostGame()
+    private void HostGame()
     {
         if (groundClient)
             throw new InvalidOperationException("Cannot host a game when you have grounded the client");
@@ -226,7 +224,7 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
         hostPromise = Methods.CreateGame();
     }
 
-    public void JoinGame()
+    private void JoinGame()
     {
         if (groundClient)
             throw new InvalidOperationException("Cannot join a game when you have grounded the client");
@@ -241,6 +239,8 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
 
     private void EnterLimbo()
     {
+        UICarousel.TargetPosition = limboCarouselPosition;
+
         waitingForStart = true;
         backButton.onBackCalls.Enqueue(ExitLimbo);
     }
@@ -285,11 +285,5 @@ public class MenuManager : MonoBehaviour, IPreprocessBuildWithReport
 
             yield return new WaitForSeconds(1f);
         }
-    }
-
-    public void OnPreprocessBuild(BuildReport report)
-    {
-        //Make sure that the server is not grounded when I build it to save my sanity
-        groundClient = false;
     }
 }

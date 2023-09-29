@@ -1,0 +1,29 @@
+Started on Jukebox
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch 61-screen-shake-sfx-music-and-post-processing
+# Your branch is up to date with 'origin/61-screen-shake-sfx-music-and-post-processing'.
+#
+# Changes to be committed:
+#	new file:   Assets/Scenes/SoundScene.unity
+#	new file:   Assets/Scenes/SoundScene.unity.meta
+#	modified:   Assets/Scenes/menuScene.unity
+#	modified:   Assets/Scripts/Menus/Main Menu/BackButton.cs
+#	modified:   Assets/Scripts/Menus/Main Menu/MenuManager.cs
+#	new file:   Assets/Scripts/Music and SFX.meta
+#	new file:   Assets/Scripts/Music and SFX/Jukebox.cs
+#	new file:   Assets/Scripts/Music and SFX/Jukebox.cs.meta
+#	new file:   Assets/Scripts/Music and SFX/MusicTrack.cs
+#	new file:   Assets/Scripts/Music and SFX/MusicTrack.cs.meta
+#	new file:   Assets/Sound/Music.meta
+#	new file:   Assets/Sound/Music/Audio.meta
+#	new file:   Assets/Sound/Music/Audio/lifelike-126735.mp3
+#	new file:   Assets/Sound/Music/Audio/lifelike-126735.mp3.meta
+#	new file:   Assets/Sound/Music/Audio/my-universe-147152.mp3
+#	new file:   Assets/Sound/Music/Audio/my-universe-147152.mp3.meta
+#	new file:   Assets/Sound/Music/Audio/password-infinity-123276.mp3
+#	new file:   Assets/Sound/Music/Audio/password-infinity-123276.mp3.meta
+#	modified:   Assets/api/client/ApiClientMethods.cs
+#	modified:   ProjectSettings/EditorBuildSettings.asset
+#

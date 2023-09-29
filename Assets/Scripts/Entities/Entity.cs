@@ -10,6 +10,7 @@ public class Entity : MonoBehaviour
 {
     public const float MIN_COORD = -100f;
     public const float MAX_COORD = 100f;
+    public const float COORD_RANGE = MAX_COORD - MIN_COORD;
 
     public float X, Y, Dx, Dy;
 
@@ -25,14 +26,6 @@ public class Entity : MonoBehaviour
         }
     }
 
-    protected static RectTransform me;
-    protected static RectTransform parent;
-    protected static Canvas gameCanvas;
-
-    protected static float XScale => parent.rect.width * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
-    protected static float YScale => parent.rect.height * gameCanvas.scaleFactor / (MAX_COORD - MIN_COORD);
-    protected static Vector3 GameAreaPosition => parent.position;
-
     protected void ClampPosition()
     {
         X = Mathf.Clamp(X, MIN_COORD, MAX_COORD);
@@ -41,6 +34,7 @@ public class Entity : MonoBehaviour
 
     protected void ApplyPosition()
     {
-        transform.position = new Vector3(X * XScale, Y * YScale, 0) + GameAreaPosition;
+        Transform parent = transform.parent;
+        transform.localPosition = new Vector3(X * COORD_RANGE, Y * COORD_RANGE, -0.1f);
     }
 }

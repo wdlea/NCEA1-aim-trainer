@@ -24,6 +24,25 @@
      id="defs1">
     <marker
        style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path17" />
+    </marker>
+    <marker
+       style="overflow:visible"
        id="Triangle"
        refX="0"
        refY="0"
@@ -82,9 +101,9 @@
      borderopacity="0.3"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.3535534"
-     inkscape:cx="131.52186"
-     inkscape:cy="677.40828"
+     inkscape:zoom="0.53776562"
+     inkscape:cx="755.90551"
+     inkscape:cy="385.85583"
      inkscape:document-units="mm"
      inkscape:showpageshadow="0"
      inkscape:pagecheckerboard="1"
@@ -370,5 +389,17 @@
        d="m 230.36451,174.0738 c 0.45196,27.57775 -26.99746,50.14149 -50.44785,51.3512"
        id="path27"
        sodipodi:nodetypes="cc" />
+    <g
+       id="g18"
+       transform="translate(-14.353599)">
+      <path
+         style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#RoundedArrow)"
+         d="M 265.01108,182.59853 V 200 h 37.32419 0.18709"
+         id="path14" />
+      <path
+         style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#RoundedArrow)"
+         d="M 265.01108,217.40147 V 200 h 37.32419 0.18709"
+         id="path18" />
+    </g>
   </g>
 </svg>

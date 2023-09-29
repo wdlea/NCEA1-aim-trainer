@@ -401,6 +401,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: skip
+      rect:
+        serializedVersion: 2
+        x: 2400
+        y: 1600
+        width: 800
+        height: 800
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b88d05fd49edd1f4fa64743a4e0f24e9
+      internalID: -66871980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -424,6 +445,7 @@ TextureImporter:
       reload_failure: -894974842
       reload_success: 761865948
       settings_button: 551695336
+      skip: -66871980
       success: -714702458
   spritePackingTag: 
   pSDRemoveMatte: 0

@@ -6,35 +6,45 @@ using UnityEngine;
 /// </summary>
 public class Me : Entity
 {
+    //here to stop double-ups
+    protected static Me Instance { get; private set; }
+
+    [SerializeField] protected Camera _camera;
+    protected Transform _parentTransform;
+    protected Collider _parentCollider;
+
     private void Start()
     {
-        if (me != null && me.gameObject != gameObject)
-            Debug.LogWarning("More than 1 mycontroller in scene");
+        if (Instance != null && Instance != this)
+            Debug.LogWarning("More than 1 Me in scene");
 
-        me = GetComponent<RectTransform>();
-        parent = me.parent.GetComponent<RectTransform>();
-        gameCanvas = me.GetComponentInParent<Canvas>();
+        Instance = this;
 
         StartCoroutine(UpdateDeltaPos());
+
+        _parentTransform = transform.parent;
+        _parentCollider = _parentTransform.GetComponent<Collider>();
     }
 
     private void Update()
     {
-        X = Input.mousePosition.x;
-        Y = Input.mousePosition.y;
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-        X -= GameAreaPosition.x;
-        Y -= GameAreaPosition.y;
+        bool wasHit = _parentCollider.Raycast(ray, out RaycastHit hit, float.PositiveInfinity);
 
-        X /= XScale;
-        Y /= YScale;
+        if (wasHit)
+        {
+            Vector3 hitPosLocal = _parentTransform.InverseTransformPoint(hit.point);
 
-        //hide cursor if in game
-        Cursor.visible = X < MIN_COORD || X > MAX_COORD || Y < MIN_COORD || Y > MAX_COORD;
+            X = hitPosLocal.x / COORD_RANGE;
+            Y = hitPosLocal.y / COORD_RANGE;
+        }
+
+        Cursor.visible = !wasHit;
 
         ClampPosition();
 
-        transform.position = new Vector3(X * XScale, Y * YScale, 0) + GameAreaPosition;
+        ApplyPosition();
     }
 
     private IEnumerator UpdateDeltaPos()
