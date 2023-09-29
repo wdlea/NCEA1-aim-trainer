@@ -1,30 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class OtherPlayer : Prop {
 
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text nameText;
+    [SerializeField] private TMP_Text _scoreText;
+    [SerializeField] private TMP_Text _nameText;
 
-    [SerializeField] private Color[] colours;
-    [SerializeField] private Image icon;
+    [SerializeField] private Color[] _colours;
+    [SerializeField] private SpriteRenderer _renderer;
 
-    private api.objects.Player player;
+    private api.objects.Player _player;
     
     public api.objects.Player Player
     {
         set
         {
             Frame = value;
-            player = value;
+            _player = value;
         }
     }
 
     private void Start()
     {
-        icon.color = RandomChoice(colours);
+        _renderer.color = RandomChoice(_colours);
     }
 
     /// <summary>
@@ -43,8 +44,11 @@ public class OtherPlayer : Prop {
 
     protected override void PreUpdatePosition()
     {
-        scoreText.text = player.Score.ToString().PadLeft(3, '0');
-        nameText.text = player.Name;
+        if (_player == null)//return early to avoid error
+            return;
+
+        _scoreText.text = _player.Score.ToString().PadLeft(3, '0');
+        _nameText.text = _player.Name;
     }
 
     protected override void PostUpdatePosition()
