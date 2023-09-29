@@ -27,14 +27,6 @@ public class ScreenShaker : MonoBehaviour
 
     [ReadOnlyEditor] public Vector3 ShakeOrigin;
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Shake();
-        }
-    }
-
     /// <summary>
     /// Shakes the camera
     /// </summary>
