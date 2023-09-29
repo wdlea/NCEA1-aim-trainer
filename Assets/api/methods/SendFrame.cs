@@ -27,7 +27,7 @@ namespace api
                     {
                         try
                         {
-                            promise.Fulfil(JsonUtility.FromJson<Game>(p.message));
+                            promise.Fulfil(JsonUtility.FromJson<Game>(p.content));
                         }
                         catch (Exception e)
                         {

@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
 
+#nullable enable
+
 namespace api
 {
     public static partial class Methods
     {
+        public static float? GAME_START_TIME = null;
+
         public static bool IsGameRunning { get; private set; }
 
         public enum Broadcast
@@ -14,10 +18,10 @@ namespace api
         }
 
         public delegate void OnTargetSpawn(objects.Target target);
-        public static OnTargetSpawn onTargetSpawn;
+        public static OnTargetSpawn? onTargetSpawn;
 
         public delegate void OnHitTarget(int ID);
-        public static OnHitTarget onHitTarget;
+        public static OnHitTarget? onHitTarget;
 
         /// <summary>
         /// Handles a broadcast packet
@@ -38,7 +42,7 @@ namespace api
                     }
                 case Broadcast.SpawnTarget:
                     {
-                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.message);
+                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.content);
                         onTargetSpawn?.Invoke(spawned);
                         break;
                     }
@@ -47,7 +51,7 @@ namespace api
                         int id;
                         try
                         {
-                            id = (int)float.Parse(broadcast.message);
+                            id = (int)float.Parse(broadcast.content);
                         }
                         catch
                         {
@@ -55,7 +59,7 @@ namespace api
                             break;
                         }
 
-                        onHitTarget(id);
+                        onHitTarget?.Invoke(id);
 
                         break;
                     }

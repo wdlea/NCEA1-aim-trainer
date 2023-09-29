@@ -191,7 +191,7 @@ namespace api
                 foreach(RecievedPacket packet in broadcastPackets)
                 {
                     //transform packet
-                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.packet.message));
+                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.packet.content));
                     packet.claimed = true;
                     Methods.HandleBroadcast(newPacket);
                 }
@@ -312,12 +312,12 @@ namespace api
     {
         public readonly PacketType type;
 
-        public readonly string message;
+        public readonly string content;
 
         public Packet(PacketType type, string message)
         {
             this.type = type;
-            this.message = message;
+            this.content = message;
         }
 
         public Packet(byte[] packet) : this(
@@ -337,7 +337,7 @@ namespace api
             );
 
             byte[] encodedMessage = Encoding.ASCII.GetBytes(
-                    message
+                    content
             );
 
 
@@ -347,7 +347,7 @@ namespace api
 
         public static bool operator ==(Packet left, Packet right)
         {
-            return (left.message == right.message) && (left.type == right.type);
+            return (left.content == right.content) && (left.type == right.type);
         }
         public static bool operator !=(Packet left, Packet right)
         {
