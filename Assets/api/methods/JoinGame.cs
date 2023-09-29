@@ -32,7 +32,7 @@ namespace api {
             };
 
             IsHost = false;
-            IsGameRunning = false;
+            ResetGame();
             Client.EnqueueSend(packet, ticket);
 
             return promise;

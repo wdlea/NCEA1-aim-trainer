@@ -10,6 +10,7 @@ namespace api
 
         public static bool IsGameRunning => GameStartInterval is not null && GameStartInterval <= 0;
 
+
         public enum Broadcast
         {
             StartGame = 'S',
@@ -22,6 +23,15 @@ namespace api
 
         public delegate void OnHitTarget(int ID);
         public static OnHitTarget? onHitTarget;
+
+        public delegate void OnResetGame();
+        public static OnResetGame onResetGame = new OnResetGame(()=> { });
+
+        internal static void ResetGame()
+        {
+            GameStartInterval = null;
+            onResetGame.Invoke();
+        }
 
         /// <summary>
         /// Handles a broadcast packet

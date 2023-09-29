@@ -1,3 +1,4 @@
+using api;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,10 +14,30 @@ public class Countdown : MonoBehaviour
 
     [SerializeField] private RectTransform _target;
 
-    [SerializeField][Range(1, 1000)] private int timerSpeedMS = 600;
-    [SerializeField][Range(1, 1000)] private int timerTransitionMS = 200;
+    [SerializeField] [Range(1, 1000)] private int timerSpeedMS = 600;
+    [SerializeField] [Range(1, 1000)] private int timerTransitionMS = 200;
 
-    public async void StartCountdown()
+
+    [SerializeField] [ReadOnlyEditor] private bool _hasCountedDown = false;
+
+    private void Start()
+    {
+        Methods.onResetGame += () =>
+        {
+            _hasCountedDown = false;
+        };
+    }
+
+    private void Update()
+    {
+        if(!_hasCountedDown && Methods.IsGameRunning)
+        {
+            StartCountdown();
+            _hasCountedDown = true;
+        }
+    }
+
+    private async void StartCountdown()
     {
         if (_isCountingDown)
             return;
