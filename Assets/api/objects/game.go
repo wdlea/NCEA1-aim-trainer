@@ -45,7 +45,8 @@ func FindGame(name string) *ll.LinkedListNode[*Game] {
 
 // creating "enums"(as close as you can get to them in GO, a custom type and some constants)
 const (
-	GAME_WAITING_FOR_PLAYERS GameState = iota //this is valid becuase some of GO's quirks
+	GAME_WAITING_FOR_PLAYERS GameState = iota
+	GAME_PENDING_START                 //TODO make sure that the C# scripts also use this definition
 	GAME_RUNNING
 	GAME_DONE
 )
@@ -88,7 +89,21 @@ func (g *Game) RemovePlayer(p *Player) {
 // Starts a game
 func (g *Game) StartGame() {
 	//set state and start the timer
-	g.State = GAME_RUNNING
+	g.State = GAME_PENDING_START
+
+	g.SendBroadcastAll(Packet{
+		Type:    'S',
+		Content: []byte(strconv.Itoa(int(COUNTDOWN_DURATION / time.Millisecond))),
+	})
+
+	startTimer := time.NewTimer(COUNTDOWN_DURATION)
+
+	//this blocks, I am not using goroutine so that I can wait for this method to finish as a way
+	//to indirectly get the status of the game
+	g.waitGameStart(startTimer)
+}
+
+func (g *Game) waitGameStart(timer *time.Timer) {
 	gameTimer := time.NewTimer(GAME_DURATION)
 	g.Done = make(chan int, 1)
 
@@ -98,13 +113,13 @@ func (g *Game) StartGame() {
 	// setup the ticker for the game updates
 	g.updateTicker = time.NewTicker(TICK_INTERVAL)
 
-	//actually start the game logic
-	go g.run()
-
 	g.SendBroadcastAll(Packet{
 		Type:    'S',
-		Content: []byte(strconv.Itoa(int(COUNTDOWN_DURATION / time.Millisecond))),
+		Content: []byte("-1"), //any value under 0 will be registered as a start
 	})
+
+	//actually start the game logic
+	go g.run()
 }
 
 // listens for the game quit on both channels, then sends the message on the other
