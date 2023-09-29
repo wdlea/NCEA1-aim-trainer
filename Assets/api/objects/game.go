@@ -11,7 +11,7 @@ import (
 
 type GameState int
 
-const TICK_RATE = 20 //hz
+const TICK_RATE = 40 //hz
 const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
 
