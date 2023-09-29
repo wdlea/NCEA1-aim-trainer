@@ -89,26 +89,11 @@ func (g *Game) RemovePlayer(p *Player) {
 func (g *Game) StartGame() {
 	//set state and start the timer
 	g.State = GAME_RUNNING
-	timer := time.NewTimer(GAME_DURATION)
+	gameTimer := time.NewTimer(GAME_DURATION)
 	g.Done = make(chan int, 1)
 
 	//start thread to listen for g.Done and the timer and quit the game once finished
-	go func(C <-chan time.Time, g *Game) {
-		for {
-			select {
-			case <-C:
-				fmt.Println("Timer expired, stopping game")
-				g.Done <- 0
-				return
-
-			default:
-				if len(g.Done) > 0 {
-					fmt.Println("game stopped not via timeout")
-					return
-				}
-			}
-		}
-	}(timer.C, g)
+	go listenGameQuit(gameTimer.C, g)
 
 	// setup the ticker for the game updates
 	g.updateTicker = time.NewTicker(TICK_INTERVAL)
@@ -120,6 +105,24 @@ func (g *Game) StartGame() {
 		Type:    'S',
 		Content: []byte(strconv.Itoa(int(COUNTDOWN_DURATION / time.Millisecond))),
 	})
+}
+
+// listens for the game quit on both channels, then sends the message on the other
+func listenGameQuit(C <-chan time.Time, g *Game) {
+	for {
+		select {
+		case <-C:
+			fmt.Println("Timer expired, stopping game")
+			g.Done <- 0
+			return
+
+		default:
+			if len(g.Done) > 0 {
+				fmt.Println("game stopped not via timeout")
+				return
+			}
+		}
+	}
 }
 
 // runs a game
