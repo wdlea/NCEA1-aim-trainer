@@ -3,6 +3,7 @@ package objects
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 
@@ -16,6 +17,8 @@ const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
 
 const TARGET_SPAWN_RATE = 2 //hz
+
+const COUNTDOWN_DURATION = 1500 * time.Millisecond //fast countdown, becuase that looks cooler
 
 const GAME_DURATION = 5 * time.Minute
 
@@ -113,7 +116,10 @@ func (g *Game) StartGame() {
 	//actually start the game logic
 	go g.run()
 
-	g.SendBroadcastAll(Packet{Type: 'S'})
+	g.SendBroadcastAll(Packet{
+		Type:    'S',
+		Content: []byte(strconv.Itoa(int(COUNTDOWN_DURATION / time.Millisecond))),
+	})
 }
 
 // runs a game
