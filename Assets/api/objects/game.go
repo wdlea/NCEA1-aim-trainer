@@ -15,7 +15,7 @@ const TICK_RATE = 40 //hz
 const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
 
-const TARGET_SPAWN_CHANCE = float64(.2) //per second(s^-1)
+const TARGET_SPAWN_RATE = 2 //hz
 
 const GAME_DURATION = 5 * time.Minute
 
@@ -119,13 +119,13 @@ func (g *Game) StartGame() {
 // runs a game
 func (g *Game) run() {
 	for {
-		if g.Tick() {
+		if g.tick() {
 			return
 		}
 	}
 }
 
-func (g *Game) Tick() (doExit bool) {
+func (g *Game) tick() (doExit bool) {
 	//get lock
 	g.DestructionLock.Lock()
 	defer g.DestructionLock.Unlock()
@@ -152,7 +152,7 @@ func (g *Game) Update(deltatime float64) {
 	}
 
 	//roll chance, proportional to deltaTime so that the spawn chance is uniform
-	if rand.Float64() < TARGET_SPAWN_CHANCE*deltatime {
+	if rand.Float64() < TARGET_SPAWN_RATE*deltatime {
 		SpawnTarget(g)
 	}
 }
