@@ -9,7 +9,7 @@ import (
 const GAME_NAME_LENGTH = 8
 
 const VELOCITY_DAMPING_FACTOR = 0.5
-const ACCELLERATION_DAMPING_FACTOR = 0.5
+const ACCELLERATION_DAMPING_FACTOR = 0.1
 
 // represents a player in the game
 type Player struct {
