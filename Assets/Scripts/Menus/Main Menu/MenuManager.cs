@@ -103,7 +103,7 @@ public class MenuManager : MonoBehaviour
         if (groundClient)
             Debug.LogWarning("Client is grounded, it will not attempt to connect to the server");
         else
-            StartCoroutine(nameof(AttemptJoinCoroutine));
+            Client.JoinServer();
     }
 
     private void CheckPromises()
@@ -270,22 +270,4 @@ public class MenuManager : MonoBehaviour
         SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
     }
     void SetNamePending(object o) => SetNamePending();
-
-    IEnumerator AttemptJoinCoroutine()
-    {
-        while (true)
-        {
-            try
-            {
-                Client.JoinServer();
-                yield break;
-            }
-            catch(Exception e)
-            {
-                Debug.Log("Failed attempted connection: " + e.Message);
-            }
-
-            yield return new WaitForSeconds(1f);
-        }
-    }
 }
