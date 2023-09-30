@@ -22,7 +22,7 @@ public class Me : Entity
 
         Instance = this;
 
-        CalculateDeltaPos();
+        CalculateMovement();
 
         _parentTransform = transform.parent;
         _parentCollider = _parentTransform.GetComponent<Collider>();

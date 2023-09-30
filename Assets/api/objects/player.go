@@ -2,10 +2,14 @@ package objects
 
 import (
 	"fmt"
+	"math"
 	"net"
 )
 
 const GAME_NAME_LENGTH = 8
+
+const VELOCITY_DAMPING_FACTOR = 0.5
+const ACCELLERATION_DAMPING_FACTOR = 0.1
 
 // represents a player in the game
 type Player struct {
@@ -13,7 +17,7 @@ type Player struct {
 
 	Game *Game `json:"-"` //avoid circular marshal
 
-	X, Y, Dx, Dy float64
+	X, Y, Dx, Dy, DDx, DDy float64
 
 	Conn net.Conn `json:"-"`
 
@@ -22,7 +26,7 @@ type Player struct {
 
 // represents an instant of the players motion
 type Frame struct {
-	X, Y, Dx, Dy float64
+	X, Y, Dx, Dy, DDx, DDy float64
 }
 
 // creates and hosts a game
@@ -95,11 +99,24 @@ func (p *Player) LeaveGame() {
 func (p *Player) ApplyFrame(f Frame) {
 
 	//add the frame
-	p.X, p.Y, p.Dx, p.Dy = f.X, f.Y, f.Dx, f.Dy
+	p.X, p.Y, p.Dx, p.Dy, p.DDx, p.DDy = f.X, f.Y, f.Dx, f.Dy, f.DDx, f.DDy
 }
 
 // updates a player based on theyr dX and dY
 func (p *Player) Update(deltaTime float64) {
+	DFactor := math.Pow(VELOCITY_DAMPING_FACTOR, deltaTime)
+
+	p.Dx *= DFactor
+	p.Dy *= DFactor
+
+	DDFactor := math.Pow(ACCELLERATION_DAMPING_FACTOR, deltaTime)
+
+	p.DDx *= DDFactor
+	p.DDy *= DDFactor
+
+	p.Dx += p.DDx * deltaTime
+	p.Dy += p.DDy * deltaTime
+
 	p.X += p.Dx * deltaTime
 	p.Y += p.Dy * deltaTime
 }

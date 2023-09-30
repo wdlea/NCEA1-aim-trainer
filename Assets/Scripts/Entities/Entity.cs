@@ -1,3 +1,4 @@
+using api;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,7 +16,10 @@ public class Entity : MonoBehaviour
     const float PROJECTED_COORD_RANGE = 1f;
     const float PROJECTION_SCALE_FACTOR = PROJECTED_COORD_RANGE / COORD_RANGE;
 
-    public float X, Y, Dx, Dy;
+    const float VELOCITY_DAMPING_FACTOR = 0.5f;
+    const float ACCELLERATION_DAMPING_FACTOR = 0.1f;
+
+    public float X, Y, Dx, Dy, DDx, DDy;
 
     public api.objects.Frame Frame
     {
@@ -26,6 +30,8 @@ public class Entity : MonoBehaviour
             Y = value.Y;
             Dx = value.Dx;
             Dy = value.Dy;
+            DDx = value.DDx;
+            DDy = value.DDy;
         }
     }
 
@@ -46,17 +52,43 @@ public class Entity : MonoBehaviour
         Y = transform.localPosition.y / PROJECTION_SCALE_FACTOR;
     }
 
-    protected async void CalculateDeltaPos()
+    protected async void CalculateMovement()
     {
-        while (this != null)//while this gameobject hasn't been destroyed
+        float pX = X, pY = Y, pDx = Dx, pDy = Dy, pTime = Time.realtimeSinceStartup;
+
+
+        while (true)//while this gameobject hasn't been destroyed
         {
-            float pX = X;
-            float pY = Y;
+            await Methods.WaitNextFrame();
 
-            await Task.Yield();
+            float dt = Time.realtimeSinceStartup - pTime;
 
-            Dx = (X - pX) / Time.deltaTime;
-            Dy = (Y - pY) / Time.deltaTime;
+            Dx = (X - pX) / dt;
+            Dy = (Y - pY) / dt;
+
+            DDx = (Dx - pDx) / dt;
+            DDy = (Dy - pDy) / dt;
+
+            pX = X; pY = Y; pDx = Dx; pDy = Dy; pTime = Time.realtimeSinceStartup;
         }
+    }
+
+    protected void ApplyMovement()
+    {
+        float DFactor = Mathf.Pow(VELOCITY_DAMPING_FACTOR, Time.deltaTime);
+
+        Dx *= DFactor;
+        Dy *= DFactor;
+
+        float DDFactor = Mathf.Pow(ACCELLERATION_DAMPING_FACTOR, Time.deltaTime);
+
+        DDx *= DDFactor;
+        DDy *= DDFactor;
+
+        Dx += DDx * Time.deltaTime;
+        Dy += DDy * Time.deltaTime;
+
+        X += Dx * Time.deltaTime;
+        Y += Dy * Time.deltaTime;
     }
 }

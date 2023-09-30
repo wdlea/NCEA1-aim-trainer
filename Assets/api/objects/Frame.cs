@@ -8,6 +8,6 @@ namespace api.objects
     [Serializable]
     public class Frame
     {
-        public float X, Y, Dx, Dy;
+        public float X, Y, Dx, Dy, DDx, DDy;
     }
 }
