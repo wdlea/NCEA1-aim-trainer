@@ -25,6 +25,9 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button nameProceedButton;
     [SerializeField] private Button hostGameButton;
     [SerializeField] private Button joinGameButton;
+    [SerializeField] private Button playButton;
+
+
 
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
@@ -70,9 +73,6 @@ public class MenuManager : MonoBehaviour
     private static bool _startPending = false;
     private static bool namePending = false;
 
-
-    AsyncOperation gameScene;
-
     private void Start()
     {
         StartJoinServer();
@@ -87,7 +87,7 @@ public class MenuManager : MonoBehaviour
     void Update()
     {
         CheckPromises();
-        SetServerStatusIndicator();
+        CheckConnection();
         CheckStartGame();
 
     }
@@ -103,7 +103,7 @@ public class MenuManager : MonoBehaviour
         if (groundClient)
             Debug.LogWarning("Client is grounded, it will not attempt to connect to the server");
         else
-            StartCoroutine(nameof(AttemptJoinCoroutine));
+            Client.JoinServer();
     }
 
     private void CheckPromises()
@@ -124,11 +124,17 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    private void SetServerStatusIndicator()
+    private void CheckConnection()
     {
+        bool isConnected = groundClient || Client.IsConnected;
+
         //set server connection indicator's status
         //TODO: make the user get sent to the main menu when the server disconnects for whatever reason
-        SetStatus(serverConnectionIndicator, groundClient || Client.IsConnected ? connectionStatusSuccess : connectionStatusFailure);
+        SetStatus(serverConnectionIndicator, isConnected ? connectionStatusSuccess : connectionStatusFailure);
+        if(!isConnected && UICarousel.TargetPosition != 0)
+            UICarousel.TargetPosition = 0;
+
+        playButton.enabled = isConnected;
     }
 
     private void CheckHostPromise()
@@ -270,22 +276,4 @@ public class MenuManager : MonoBehaviour
         SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
     }
     void SetNamePending(object o) => SetNamePending();
-
-    IEnumerator AttemptJoinCoroutine()
-    {
-        while (true)
-        {
-            try
-            {
-                Client.JoinServer();
-                yield break;
-            }
-            catch(Exception e)
-            {
-                Debug.Log("Failed attempted connection: " + e.Message);
-            }
-
-            yield return new WaitForSeconds(1f);
-        }
-    }
 }

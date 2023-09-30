@@ -1,15 +1,22 @@
 using System;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace api
 {
+
+
     /// <summary>
     /// This is what communicates with the API server.
     /// </summary>
     [Serializable]
     public static partial class Client
     {
+        const int BACKOFF_MULTIPLIER = 2;
+        const int BACKOFF_CAP = 10_000;//10 seconds
+
         public static bool IsConnected => communicationSocket.Connected;
 
         private static Socket communicationSocket;
@@ -38,10 +45,30 @@ namespace api
         /// <summary>
         /// Connects to server
         /// </summary>
-        /// <returns>Whether the operation succeeded.</returns>
-        private static void Connect()
+        private static async void Connect()
         {
-                communicationSocket.Connect(serverEndpoint);
+            EndPoint endpoint = serverEndpoint;
+
+            int currentBackoff = 10; //ms
+
+            while(endpoint == serverEndpoint)
+            {
+                try
+                {
+                    await communicationSocket.ConnectAsync(serverEndpoint);
+                    return;
+                }
+                catch
+                {
+                    //exponentially backoff
+                    await Task.Delay(currentBackoff);
+
+                    currentBackoff *= BACKOFF_MULTIPLIER;
+                    currentBackoff = Math.Min(currentBackoff, BACKOFF_CAP);
+
+                    Debug.Log("Failed to connect to server, current backoff: " + currentBackoff.ToString() + "ms");
+                }
+            }
         }
 
         /// <summary>
