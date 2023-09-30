@@ -113,6 +113,9 @@ func (g *Game) waitGameStart(timer *time.Timer) {
 	// setup the ticker for the game updates
 	g.updateTicker = time.NewTicker(TICK_INTERVAL)
 
+	<-timer.C //wait for timer
+	g.State = GAME_RUNNING
+
 	g.SendBroadcastAll(Packet{
 		Type:    'S',
 		Content: []byte("-1"), //any value under 0 will be registered as a start

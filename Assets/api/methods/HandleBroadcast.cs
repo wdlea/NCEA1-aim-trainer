@@ -8,7 +8,8 @@ namespace api
     {
         public static float? GameStartInterval = null;
 
-        public static bool IsGameRunning => GameStartInterval is not null && GameStartInterval <= 0;
+        public static bool IsGameActive => GameStartInterval is not null;
+        public static bool IsGameRunning => IsGameActive && GameStartInterval <= 0;
 
 
         public enum Broadcast
