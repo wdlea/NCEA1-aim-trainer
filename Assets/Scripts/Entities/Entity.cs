@@ -69,11 +69,15 @@ public class Entity : MonoBehaviour
 
     protected void ApplyMovement()
     {
-        Dx *= VELOCITY_DAMPING_FACTOR / Time.deltaTime;
-        Dy *= VELOCITY_DAMPING_FACTOR / Time.deltaTime;
+        float DFactor = Mathf.Pow(VELOCITY_DAMPING_FACTOR, Time.deltaTime);
 
-        DDx *= ACCELLERATION_DAMPING_FACTOR / Time.deltaTime;
-        DDy *= ACCELLERATION_DAMPING_FACTOR / Time.deltaTime;
+        Dx *= DFactor;
+        Dy *= DFactor;
+
+        float DDFactor = Mathf.Pow(ACCELLERATION_DAMPING_FACTOR, Time.deltaTime);
+
+        DDx *= DDFactor;
+        DDy *= DDFactor;
 
         Dx += DDx * Time.deltaTime;
         Dy += DDy * Time.deltaTime;

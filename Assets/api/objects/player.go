@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"math"
 	"net"
 )
 
@@ -103,11 +104,15 @@ func (p *Player) ApplyFrame(f Frame) {
 
 // updates a player based on theyr dX and dY
 func (p *Player) Update(deltaTime float64) {
-	p.Dx *= VELOCITY_DAMPING_FACTOR / deltaTime
-	p.Dy *= VELOCITY_DAMPING_FACTOR / deltaTime
+	DFactor := math.Pow(VELOCITY_DAMPING_FACTOR, deltaTime)
 
-	p.DDx *= ACCELLERATION_DAMPING_FACTOR / deltaTime
-	p.DDy *= ACCELLERATION_DAMPING_FACTOR / deltaTime
+	p.Dx *= DFactor
+	p.Dy *= DFactor
+
+	DDFactor := math.Pow(ACCELLERATION_DAMPING_FACTOR, deltaTime)
+
+	p.DDx *= DDFactor
+	p.DDy *= DDFactor
 
 	p.Dx += p.DDx * deltaTime
 	p.Dy += p.DDy * deltaTime
