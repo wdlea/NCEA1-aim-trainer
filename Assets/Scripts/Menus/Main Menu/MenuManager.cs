@@ -25,6 +25,9 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button nameProceedButton;
     [SerializeField] private Button hostGameButton;
     [SerializeField] private Button joinGameButton;
+    [SerializeField] private Button playButton;
+
+
 
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
@@ -70,9 +73,6 @@ public class MenuManager : MonoBehaviour
     private static bool _startPending = false;
     private static bool namePending = false;
 
-
-    AsyncOperation gameScene;
-
     private void Start()
     {
         StartJoinServer();
@@ -87,7 +87,7 @@ public class MenuManager : MonoBehaviour
     void Update()
     {
         CheckPromises();
-        SetServerStatusIndicator();
+        CheckConnection();
         CheckStartGame();
 
     }
@@ -124,11 +124,17 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    private void SetServerStatusIndicator()
+    private void CheckConnection()
     {
+        bool isConnected = groundClient || Client.IsConnected;
+
         //set server connection indicator's status
         //TODO: make the user get sent to the main menu when the server disconnects for whatever reason
-        SetStatus(serverConnectionIndicator, groundClient || Client.IsConnected ? connectionStatusSuccess : connectionStatusFailure);
+        SetStatus(serverConnectionIndicator, isConnected ? connectionStatusSuccess : connectionStatusFailure);
+        if(!isConnected && UICarousel.TargetPosition != 0)
+            UICarousel.TargetPosition = 0;
+
+        playButton.enabled = isConnected;
     }
 
     private void CheckHostPromise()

@@ -6343,6 +6343,7 @@ MonoBehaviour:
   nameProceedButton: {fileID: 1783089423}
   hostGameButton: {fileID: 285174000}
   joinGameButton: {fileID: 1332366556}
+  playButton: {fileID: 235834731}
   serverConnectionIndicator: {fileID: 1474210686}
   nameStatusIndicator: {fileID: 651590943}
   joinCodeText: {fileID: 1610214895}
