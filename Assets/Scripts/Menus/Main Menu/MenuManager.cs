@@ -64,13 +64,12 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private int gameSceneIndex;
     [SerializeField] private int menuSceneIndex;
 
-    private bool waitingForStart = false;
-
     public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
 
-    
+   
+    private static bool _startPending = false;
+    private static bool namePending = false;
 
-    static bool namePending = false;
 
     AsyncOperation gameScene;
 
@@ -116,12 +115,12 @@ public class MenuManager : MonoBehaviour
 
     private void CheckStartGame()
     {
-        if (Methods.IsGameRunning)
+        if (Methods.IsGameActive)
         {
-            if (waitingForStart)
+            if (_startPending)
                 JoinGameScene();
-            else
-                throw new UnexpectedPacketException();//A game flagging as running when I am not waiting is unexpected
+            //else //If the client does not want to start don't make them
+            //    throw new UnexpectedPacketException();//A game flagging as running when I am not waiting is unexpected
         }
     }
 
@@ -141,6 +140,8 @@ public class MenuManager : MonoBehaviour
                 //successful host
                 joinCodeText.gameObject.SetActive(true);
                 joinCodeText.text = code;
+
+                _startPending = true;
             }
             else
             {
@@ -158,10 +159,13 @@ public class MenuManager : MonoBehaviour
             {
                 //successful join
                 joinCodeText.gameObject.SetActive(false);
+
+                _startPending = true;
             }
             else
             {
                 //failure
+                throw new UnexpectedPacketException();
             }
         }
     }
@@ -241,14 +245,12 @@ public class MenuManager : MonoBehaviour
     {
         UICarousel.TargetPosition = limboCarouselPosition;
 
-        waitingForStart = true;
         backButton.onBackCalls.Enqueue(ExitLimbo);
     }
 
     private void ExitLimbo()
     {
         Methods.LeaveGame();
-        waitingForStart = false;
     }
 
     void SetStatus(Image indicator, IndicatorStatus status)

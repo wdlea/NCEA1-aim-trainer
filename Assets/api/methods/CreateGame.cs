@@ -34,8 +34,8 @@ namespace api
                   {
                       if (p.type == PacketType.ClientBoundCreateResponse)
                       {
-                          GameCode = p.message;
-                          promise.Fulfil(p.message);
+                          GameCode = p.content;
+                          promise.Fulfil(p.content);
                       }
                       else
                       {
@@ -45,7 +45,7 @@ namespace api
             };
 
 
-            IsGameRunning = false;
+            ResetGame();
             IsHost = true;
             Client.EnqueueSend(packet, ticket);
 

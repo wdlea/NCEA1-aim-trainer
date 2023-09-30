@@ -16,7 +16,7 @@ public class Target : Prop
     public void OnHit()
     {
         Debug.Log("Ouch! ID: " + ID.ToString());
-        api.Methods.HitTarget(this.ID);
+        api.Methods.HitTarget(ID);
     }
 
     protected override void PreUpdatePosition()
@@ -35,6 +35,6 @@ public class Target : Prop
     public void DestroyTarget()
     {
         
-        Destroy(this.gameObject);
+        Destroy(gameObject);
     }
 }

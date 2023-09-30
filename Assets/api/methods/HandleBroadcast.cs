@@ -1,10 +1,16 @@
 ﻿using UnityEngine;
 
+#nullable enable
+
 namespace api
 {
     public static partial class Methods
     {
-        public static bool IsGameRunning { get; private set; }
+        public static float? GameStartInterval = null;
+
+        public static bool IsGameActive => GameStartInterval is not null;
+        public static bool IsGameRunning => IsGameActive && GameStartInterval <= 0;
+
 
         public enum Broadcast
         {
@@ -14,10 +20,19 @@ namespace api
         }
 
         public delegate void OnTargetSpawn(objects.Target target);
-        public static OnTargetSpawn onTargetSpawn;
+        public static OnTargetSpawn? onTargetSpawn;
 
         public delegate void OnHitTarget(int ID);
-        public static OnHitTarget onHitTarget;
+        public static OnHitTarget? onHitTarget;
+
+        public delegate void OnResetGame();
+        public static OnResetGame onResetGame = new OnResetGame(()=> { });
+
+        internal static void ResetGame()
+        {
+            GameStartInterval = null;
+            onResetGame.Invoke();
+        }
 
         /// <summary>
         /// Handles a broadcast packet
@@ -32,13 +47,13 @@ namespace api
             {
                 case Broadcast.StartGame:
                     {
-                        Debug.Log("Started Game");
-                        IsGameRunning = true;
+                        GameStartInterval = float.Parse(broadcast.content);
+
                         break;
                     }
                 case Broadcast.SpawnTarget:
                     {
-                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.message);
+                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.content);
                         onTargetSpawn?.Invoke(spawned);
                         break;
                     }
@@ -47,7 +62,7 @@ namespace api
                         int id;
                         try
                         {
-                            id = (int)float.Parse(broadcast.message);
+                            id = (int)float.Parse(broadcast.content);
                         }
                         catch
                         {
@@ -55,7 +70,7 @@ namespace api
                             break;
                         }
 
-                        onHitTarget(id);
+                        onHitTarget?.Invoke(id);
 
                         break;
                     }

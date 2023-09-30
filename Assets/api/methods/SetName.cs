@@ -30,7 +30,7 @@ namespace api
                 {
                     if (p.type == PacketType.ClientBoundNameResponse)
                     {
-                        promise.Fulfil(p.message);
+                        promise.Fulfil(p.content);
                     }
                     else
                     {

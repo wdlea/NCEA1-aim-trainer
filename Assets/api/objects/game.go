@@ -3,6 +3,7 @@ package objects
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 
@@ -11,11 +12,13 @@ import (
 
 type GameState int
 
-const TICK_RATE = 20 //hz
+const TICK_RATE = 40 //hz
 const TICK_INTERVAL = time.Second / TICK_RATE
 const TICK_INTERVAL_SECONDS = 1.0 / TICK_RATE
 
-const TARGET_SPAWN_CHANCE = float64(.2) //per second(s^-1)
+const TARGET_SPAWN_RATE = 2 //hz
+
+const COUNTDOWN_DURATION = 1200 * time.Millisecond //fast countdown, becuase that looks cooler
 
 const GAME_DURATION = 5 * time.Minute
 
@@ -42,7 +45,8 @@ func FindGame(name string) *ll.LinkedListNode[*Game] {
 
 // creating "enums"(as close as you can get to them in GO, a custom type and some constants)
 const (
-	GAME_WAITING_FOR_PLAYERS GameState = iota //this is valid becuase some of GO's quirks
+	GAME_WAITING_FOR_PLAYERS GameState = iota
+	GAME_PENDING_START                 //TODO make sure that the C# scripts also use this definition
 	GAME_RUNNING
 	GAME_DONE
 )
@@ -85,47 +89,70 @@ func (g *Game) RemovePlayer(p *Player) {
 // Starts a game
 func (g *Game) StartGame() {
 	//set state and start the timer
-	g.State = GAME_RUNNING
-	timer := time.NewTimer(GAME_DURATION)
+	g.State = GAME_PENDING_START
+
+	g.SendBroadcastAll(Packet{
+		Type:    'S',
+		Content: []byte(strconv.Itoa(int(COUNTDOWN_DURATION / time.Millisecond))),
+	})
+
+	startTimer := time.NewTimer(COUNTDOWN_DURATION)
+
+	//this blocks, I am not using goroutine so that I can wait for this method to finish as a way
+	//to indirectly get the status of the game
+	g.waitGameStart(startTimer)
+}
+
+func (g *Game) waitGameStart(timer *time.Timer) {
+	gameTimer := time.NewTimer(GAME_DURATION)
 	g.Done = make(chan int, 1)
 
 	//start thread to listen for g.Done and the timer and quit the game once finished
-	go func(C <-chan time.Time, g *Game) {
-		for {
-			select {
-			case <-C:
-				fmt.Println("Timer expired, stopping game")
-				g.Done <- 0
-				return
-
-			default:
-				if len(g.Done) > 0 {
-					fmt.Println("game stopped not via timeout")
-					return
-				}
-			}
-		}
-	}(timer.C, g)
+	go listenGameQuit(gameTimer.C, g)
 
 	// setup the ticker for the game updates
 	g.updateTicker = time.NewTicker(TICK_INTERVAL)
 
+	<-timer.C //wait for timer
+	g.State = GAME_RUNNING
+
+	g.SendBroadcastAll(Packet{
+		Type:    'S',
+		Content: []byte("-1"), //any value under 0 will be registered as a start
+	})
+
 	//actually start the game logic
 	go g.run()
+}
 
-	g.SendBroadcastAll(Packet{Type: 'S'})
+// listens for the game quit on both channels, then sends the message on the other
+func listenGameQuit(C <-chan time.Time, g *Game) {
+	for {
+		select {
+		case <-C:
+			fmt.Println("Timer expired, stopping game")
+			g.Done <- 0
+			return
+
+		default:
+			if len(g.Done) > 0 {
+				fmt.Println("game stopped not via timeout")
+				return
+			}
+		}
+	}
 }
 
 // runs a game
 func (g *Game) run() {
 	for {
-		if g.Tick() {
+		if g.tick() {
 			return
 		}
 	}
 }
 
-func (g *Game) Tick() (doExit bool) {
+func (g *Game) tick() (doExit bool) {
 	//get lock
 	g.DestructionLock.Lock()
 	defer g.DestructionLock.Unlock()
@@ -152,7 +179,7 @@ func (g *Game) Update(deltatime float64) {
 	}
 
 	//roll chance, proportional to deltaTime so that the spawn chance is uniform
-	if rand.Float64() < TARGET_SPAWN_CHANCE*deltatime {
+	if rand.Float64() < TARGET_SPAWN_RATE*deltatime {
 		SpawnTarget(g)
 	}
 }

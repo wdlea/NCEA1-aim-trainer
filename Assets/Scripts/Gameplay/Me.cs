@@ -13,6 +13,8 @@ public class Me : Entity
     protected Transform _parentTransform;
     protected Collider _parentCollider;
 
+    [SerializeField] private float _zOffset = -0.1f;
+
     private void Start()
     {
         if (Instance != null && Instance != this)
@@ -20,7 +22,7 @@ public class Me : Entity
 
         Instance = this;
 
-        StartCoroutine(UpdateDeltaPos());
+        CalculateDeltaPos();
 
         _parentTransform = transform.parent;
         _parentCollider = _parentTransform.GetComponent<Collider>();
@@ -33,30 +35,15 @@ public class Me : Entity
         bool wasHit = _parentCollider.Raycast(ray, out RaycastHit hit, float.PositiveInfinity);
 
         if (wasHit)
-        {
-            Vector3 hitPosLocal = _parentTransform.InverseTransformPoint(hit.point);
-
-            X = hitPosLocal.x / COORD_RANGE;
-            Y = hitPosLocal.y / COORD_RANGE;
-        }
+            transform.position = hit.point + new Vector3(0, 0, _zOffset);
+        
 
         Cursor.visible = !wasHit;
 
-        ClampPosition();
+        CalculateNormalizedPosition();
 
-        ApplyPosition();
-    }
+        //ClampPosition(); //position will already be clamped becuase the ray wouldn't hit otherwise
 
-    private IEnumerator UpdateDeltaPos()
-    {
-        while(true){
-            float pX = X;
-            float pY = Y;
-
-            yield return new WaitForSeconds(1 / 5);//5hz
-
-            Dx = (X - pX) / Time.deltaTime;
-            Dy = (Y - pY) / Time.deltaTime;
-        }
+        //ApplyNormalizedPosition(); //I don't need to do this unless I allow the server to manipulate the client's position
     }
 }

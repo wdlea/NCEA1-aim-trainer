@@ -56,7 +56,7 @@ public class GameManager : MonoBehaviour
             {
                 Exception? err = gamePromise.Get(out Game game);
 
-                if (err != null) throw err;
+                if (err is not null) throw err;
 
                 ApplyGame(game);
                 gamePromise = null;
@@ -66,6 +66,9 @@ public class GameManager : MonoBehaviour
 
     void ApplyGame(Game game)
     {
+        if (game.Players is null)
+            return;
+
         foreach (Player player in game.Players)
         {
             if(player.Name == myName)

@@ -11,7 +11,7 @@ public abstract class Prop : Entity {
         Y += Dy * Time.deltaTime;
 
         ClampPosition();
-        ApplyPosition();
+        ApplyNormalizedPosition();
         PostUpdatePosition();
     }
     /// <summary>

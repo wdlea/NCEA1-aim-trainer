@@ -1,12 +1,8 @@
 FROM golang:alpine
-WORKDIR /go/src/github.com/wdlea/aintrainerapi
+WORKDIR /go/src/github.com/wdlea/aimtrainerapi
 
 COPY go.mod go.mod
-
-
-
 COPY main.go main.go
-
 COPY objects objects
 COPY boilerplate boilerplate
 COPY logic logic

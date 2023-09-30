@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -11,6 +12,8 @@ public class Entity : MonoBehaviour
     public const float MIN_COORD = -100f;
     public const float MAX_COORD = 100f;
     public const float COORD_RANGE = MAX_COORD - MIN_COORD;
+    const float PROJECTED_COORD_RANGE = 1f;
+    const float PROJECTION_SCALE_FACTOR = PROJECTED_COORD_RANGE / COORD_RANGE;
 
     public float X, Y, Dx, Dy;
 
@@ -32,9 +35,28 @@ public class Entity : MonoBehaviour
         Y = Mathf.Clamp(Y, MIN_COORD, MAX_COORD);
     }
 
-    protected void ApplyPosition()
+    protected void ApplyNormalizedPosition()
     {
-        Transform parent = transform.parent;
-        transform.localPosition = new Vector3(X * COORD_RANGE, Y * COORD_RANGE, -0.1f);
+        transform.localPosition = new Vector3(X * PROJECTION_SCALE_FACTOR, Y * PROJECTION_SCALE_FACTOR, -0.1f);
+    }
+
+    protected void CalculateNormalizedPosition()
+    {
+        X = transform.localPosition.x / PROJECTION_SCALE_FACTOR;
+        Y = transform.localPosition.y / PROJECTION_SCALE_FACTOR;
+    }
+
+    protected async void CalculateDeltaPos()
+    {
+        while (this != null)//while this gameobject hasn't been destroyed
+        {
+            float pX = X;
+            float pY = Y;
+
+            await Task.Yield();
+
+            Dx = (X - pX) / Time.deltaTime;
+            Dy = (Y - pY) / Time.deltaTime;
+        }
     }
 }
