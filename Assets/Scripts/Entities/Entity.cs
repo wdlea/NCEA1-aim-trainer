@@ -15,7 +15,10 @@ public class Entity : MonoBehaviour
     const float PROJECTED_COORD_RANGE = 1f;
     const float PROJECTION_SCALE_FACTOR = PROJECTED_COORD_RANGE / COORD_RANGE;
 
-    public float X, Y, Dx, Dy;
+    const float VELOCITY_DAMPING_FACTOR = 0.5f;
+    const float ACCELLERATION_DAMPING_FACTOR = 0.5f;
+
+    public float X, Y, Dx, Dy, DDx, DDy;
 
     public api.objects.Frame Frame
     {
@@ -26,6 +29,8 @@ public class Entity : MonoBehaviour
             Y = value.Y;
             Dx = value.Dx;
             Dy = value.Dy;
+            DDx = value.DDx;
+            DDy = value.DDy;
         }
     }
 
@@ -46,17 +51,34 @@ public class Entity : MonoBehaviour
         Y = transform.localPosition.y / PROJECTION_SCALE_FACTOR;
     }
 
-    protected async void CalculateDeltaPos()
+    protected async void CalculateMovement()
     {
         while (this != null)//while this gameobject hasn't been destroyed
         {
-            float pX = X;
-            float pY = Y;
+            float pX=X, pY=Y, pDx = Dx, pDy = Dy;
 
             await Task.Yield();
 
             Dx = (X - pX) / Time.deltaTime;
             Dy = (Y - pY) / Time.deltaTime;
+
+            DDx = (Dx - pDx) / Time.deltaTime;
+            DDy = (Dy - pDy) / Time.deltaTime;
         }
+    }
+
+    protected void ApplyMovement()
+    {
+        Dx *= VELOCITY_DAMPING_FACTOR / Time.deltaTime;
+        Dy *= VELOCITY_DAMPING_FACTOR / Time.deltaTime;
+
+        DDx *= ACCELLERATION_DAMPING_FACTOR / Time.deltaTime;
+        DDy *= ACCELLERATION_DAMPING_FACTOR / Time.deltaTime;
+
+        Dx += DDx * Time.deltaTime;
+        Dy += DDy * Time.deltaTime;
+
+        X += Dx * Time.deltaTime;
+        Y += Dy * Time.deltaTime;
     }
 }

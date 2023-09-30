@@ -103,11 +103,11 @@ func (p *Player) ApplyFrame(f Frame) {
 
 // updates a player based on theyr dX and dY
 func (p *Player) Update(deltaTime float64) {
-	p.Dx *= VELOCITY_DAMPING_FACTOR
-	p.Dy *= VELOCITY_DAMPING_FACTOR
+	p.Dx *= VELOCITY_DAMPING_FACTOR / deltaTime
+	p.Dy *= VELOCITY_DAMPING_FACTOR / deltaTime
 
-	p.DDx *= ACCELLERATION_DAMPING_FACTOR
-	p.DDy *= ACCELLERATION_DAMPING_FACTOR
+	p.DDx *= ACCELLERATION_DAMPING_FACTOR / deltaTime
+	p.DDy *= ACCELLERATION_DAMPING_FACTOR / deltaTime
 
 	p.Dx += p.DDx * deltaTime
 	p.Dy += p.DDy * deltaTime
