@@ -2,6 +2,7 @@ using System;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace api
 {
@@ -14,7 +15,7 @@ namespace api
     public static partial class Client
     {
         const int BACKOFF_MULTIPLIER = 2;
-        const int BACKOFF_CAP = 10_0000;//10 seconds
+        const int BACKOFF_CAP = 10_000;//10 seconds
 
         public static bool IsConnected => communicationSocket.Connected;
 
@@ -64,6 +65,8 @@ namespace api
 
                     currentBackoff *= BACKOFF_MULTIPLIER;
                     currentBackoff = Math.Min(currentBackoff, BACKOFF_CAP);
+
+                    Debug.Log("Failed to connect to server, current backoff: " + currentBackoff.ToString() + "ms");
                 }
             }
         }
