@@ -1,3 +1,4 @@
+using api;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -53,17 +54,22 @@ public class Entity : MonoBehaviour
 
     protected async void CalculateMovement()
     {
-        while (this != null)//while this gameobject hasn't been destroyed
+        float pX = X, pY = Y, pDx = Dx, pDy = Dy, pTime = Time.realtimeSinceStartup;
+
+
+        while (true)//while this gameobject hasn't been destroyed
         {
-            float pX=X, pY=Y, pDx = Dx, pDy = Dy;
+            await Methods.WaitNextFrame();
 
-            await Task.Yield();
+            float dt = Time.realtimeSinceStartup - pTime;
 
-            Dx = (X - pX) / Time.deltaTime;
-            Dy = (Y - pY) / Time.deltaTime;
+            Dx = (X - pX) / dt;
+            Dy = (Y - pY) / dt;
 
-            DDx = (Dx - pDx) / Time.deltaTime;
-            DDy = (Dy - pDy) / Time.deltaTime;
+            DDx = (Dx - pDx) / dt;
+            DDy = (Dy - pDy) / dt;
+
+            pX = X; pY = Y; pDx = Dx; pDy = Dy; pTime = Time.realtimeSinceStartup;
         }
     }
 
