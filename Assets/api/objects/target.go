@@ -9,7 +9,9 @@ import (
 )
 
 type Target struct {
-	X, Y, Dx, Dy float64
+	X, Y, Dx, Dy, DDx, DDy float64
+
+	Scale, Dscale float64
 
 	ID     float64
 	llNode *ll.LinkedListNode[*Target]
@@ -26,6 +28,12 @@ func SpawnTarget(g *Game) {
 
 	t.Dx = (rand.Float64() - 0.5) * 50
 	t.Dy = (rand.Float64() - 0.5) * 50
+
+	t.DDx = (rand.Float64() - 0.5) * 25
+	t.DDy = (rand.Float64() - 0.5) * 25
+
+	t.Scale = (rand.Float64() * 3) + 0.25
+	t.Dscale = 1 + ((rand.Float64() - 0.5) / 2.5) //0.8-1.2
 
 	t.llNode = g.Targets.AddLast(t)
 
