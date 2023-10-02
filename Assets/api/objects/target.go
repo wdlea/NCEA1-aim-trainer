@@ -33,7 +33,7 @@ func SpawnTarget(g *Game) {
 	t.DDy = (rand.Float64() - 0.5) * 25
 
 	t.Scale = (rand.Float64() * 3) + 0.25
-	t.Dscale = 1 + ((rand.Float64() - 0.5) / 2.5) //0.8-1.2
+	t.Dscale = ((rand.Float64() - 0.5) / 2.5) //(-0.2)-(0.2)
 
 	t.llNode = g.Targets.AddLast(t)
 

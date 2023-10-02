@@ -17,7 +17,7 @@ public class Entity : MonoBehaviour
     const float PROJECTION_SCALE_FACTOR = PROJECTED_COORD_RANGE / COORD_RANGE;
 
     const float VELOCITY_DAMPING_FACTOR = 0.5f;
-    const float ACCELLERATION_DAMPING_FACTOR = 0.1f;
+    const float ACCELLERATION_DAMPING_FACTOR = 0.0001f;
 
     public float X, Y, Dx, Dy, DDx, DDy;
 
@@ -84,6 +84,12 @@ public class Entity : MonoBehaviour
 
         DDx *= DDFactor;
         DDy *= DDFactor;
+
+        if (DDy < 1)
+            DDy = 0;
+
+        if (DDx < 1)
+            DDx = 0;
 
         Dx += DDx * Time.deltaTime;
         Dy += DDy * Time.deltaTime;
