@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace api {
@@ -8,34 +9,20 @@ namespace api {
         /// </summary>
         /// <param name="code">The code to join the game with</param>
         /// <returns>A promise, will resolve to true if it was sucessful.</returns>
-        public static Promise<bool> JoinGame(string code)
+        public static async Task<bool> JoinGame(string code)
         {
             Debug.Log("joining Game");
-            Promise<bool> promise = new Promise<bool>();
 
             Packet packet = new Packet(PacketType.ServerBoundJoin, code);
 
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundJoinResponse,
-                onResponse = (Packet p) =>
-                  {
-                      if(p.type == PacketType.ClientBoundJoinResponse)
-                      {
-                          promise.Fulfil(true);
-                      }
-                      else
-                      {
-                          promise.Fail(new UnexpectedPacketException());
-                      }
-                  }
-            };
+            Packet response = await Client.SendPacket(
+                packet,
+                (Packet p) => {
+                    return p.Type == PacketType.ClientBoundJoinResponse || p.Type == PacketType.Error;
+                }
+            );
 
-            IsHost = false;
-            ResetGame();
-            Client.EnqueueSend(packet, ticket);
-
-            return promise;
+            return response.Type == PacketType.ClientBoundJoinResponse;
         }
     }
 }

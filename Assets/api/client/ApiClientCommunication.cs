@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace api
 {
-    public delegate bool IsPacketSuitable(Packet p);
+    internal delegate bool IsPacketSuitable(Packet p);
 
     public static partial class Client
     {
