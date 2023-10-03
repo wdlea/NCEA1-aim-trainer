@@ -21,6 +21,11 @@ namespace api
         private static ConcurrentQueue<Claim> _claimQueue = new();
         private static Queue<byte[]> _fragments = new();
 
+        /// <summary>
+        /// Gets the next packet recieved that fulfils isSuitable
+        /// </summary>
+        /// <param name="isSuitable">The delegate to check if a packet is ok.</param>
+        /// <returns>The first packet isSuitable returned <c>true</c> for</returns>
         public static async Task<Packet> GetResponse(IsPacketSuitable isSuitable)
         {
             Claim claim = new Claim(isSuitable);
@@ -35,22 +40,11 @@ namespace api
             return result;
         }
 
-        public static void DistributePacket(Packet p)
-        {
-            lock (_claimQueue)
-            {
-                while (IsConnected)
-                {
-                    if(_claimQueue.TryDequeue(out Claim claim))
-                    {
-                        if (claim.CheckPacket(p))
-                            return;
-                        else throw new UnexpectedPacketException();
-                    }
-                }
-            }
-        }
-
+        /// <summary>
+        /// Sends a packet
+        /// </summary>
+        /// <param name="p">The packet to send</param>
+        /// <returns></returns>
         public static async Task SendPacket(Packet p)
         {
             byte[] message = p.ToBytes();
@@ -58,13 +52,25 @@ namespace api
             await communicationSocket.SendAsync(message, SocketFlags.None);
         }
 
+        /// <summary>
+        /// Shortcut for calling 
+        /// <code>
+        ///     await Client.SendPacket(p);
+        ///     await Client.GetResponse(isSuitable);
+        /// </code>
+        /// </summary>
+        /// <param name="p">The packet to send</param>
+        /// <param name="isSuitable">A delegate for matching a recieved packet to the response</param>
+        /// <returns></returns>
         public static async Task<Packet> SendPacket(Packet p, IsPacketSuitable isSuitable)
         {
             await SendPacket(p);
             return await GetResponse(isSuitable);
         }
 
-
+        /// <summary>
+        /// Starts the neccessary threads for sending and recieving packets
+        /// </summary>
         public static void StartCommunication()
         {
             _claimQueue.Clear();
@@ -74,7 +80,9 @@ namespace api
             Task.Run(RecombobulatePackets);
         }
 
-        
+        /// <summary>
+        /// The thread that handles reading data from the socket
+        /// </summary>
         private static async void RecievePackets()
         {
             byte[] buffer = new byte[BUFFER_SIZE];
@@ -86,6 +94,29 @@ namespace api
             }
         }
 
+        /// <summary>
+        /// Handles matching a packet to a claim
+        /// </summary>
+        /// <param name="p">The packet to match</param>
+        private static void DistributePacket(Packet p)
+        {
+            lock (_claimQueue)
+            {
+                while (IsConnected)
+                {
+                    if (_claimQueue.TryDequeue(out Claim claim))
+                    {
+                        if (claim.CheckPacket(p))
+                            return;
+                        else throw new UnexpectedPacketException();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The thread that processes recieved data from the socket into packets
+        /// </summary>
         private static async void RecombobulatePackets()
         {
             List<byte> currentPacket = new();
@@ -124,6 +155,9 @@ namespace api
         }
     }
 
+    /// <summary>
+    /// Represents a Claim to a packet
+    /// </summary>
     internal class Claim
     {
         public bool Cancelled { get; private set; }
