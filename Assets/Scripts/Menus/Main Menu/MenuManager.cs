@@ -90,6 +90,7 @@ public class MenuManager : MonoBehaviour
         CheckConnection();
         CheckStartGame();
 
+        nameReloadButton.interactable = nameInput.text.Length > 0;
     }
 
     private void JoinGameScene()
@@ -202,8 +203,6 @@ public class MenuManager : MonoBehaviour
     private void ApplyName()
     {
         string name = nameInput.text;
-        if (name.Length <= 0)
-            return;
 
         if (groundClient)
         {
