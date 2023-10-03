@@ -19,6 +19,7 @@ namespace api
         const byte PACKET_DELIMETER = (byte)'\n';
 
         private static ConcurrentQueue<Claim> _claimQueue = new();
+        private static Queue<byte[]> _fragments = new();
 
         public static async Task<Packet> GetResponse(IsPacketSuitable isSuitable)
         {
@@ -64,7 +65,16 @@ namespace api
         }
 
 
-        private static Queue<byte[]> _fragments = new();
+        public static void StartCommunication()
+        {
+            _claimQueue.Clear();
+            _fragments.Clear();
+
+            Task.Run(RecievePackets);
+            Task.Run(RecombobulatePackets);
+        }
+
+        
         private static async void RecievePackets()
         {
             byte[] buffer = new byte[BUFFER_SIZE];
