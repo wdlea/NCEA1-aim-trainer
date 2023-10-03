@@ -15,7 +15,6 @@ namespace api
     public static partial class Client
     {
         const int BUFFER_SIZE = 1024;
-        const int PACKET_SIZE = 1024;
         const byte PACKET_DELIMETER = (byte)'\n';
 
         private static ConcurrentQueue<Claim> _claimQueue = new();
@@ -26,7 +25,7 @@ namespace api
         /// </summary>
         /// <param name="isSuitable">The delegate to check if a packet is ok.</param>
         /// <returns>The first packet isSuitable returned <c>true</c> for</returns>
-        public static async Task<Packet> GetResponse(IsPacketSuitable isSuitable)
+        internal static async Task<Packet> GetResponse(IsPacketSuitable isSuitable)
         {
             Claim claim = new Claim(isSuitable);
 
@@ -45,7 +44,7 @@ namespace api
         /// </summary>
         /// <param name="p">The packet to send</param>
         /// <returns></returns>
-        public static async Task SendPacket(Packet p)
+        internal static async Task SendPacket(Packet p)
         {
             byte[] message = p.ToBytes();
 
@@ -62,7 +61,7 @@ namespace api
         /// <param name="p">The packet to send</param>
         /// <param name="isSuitable">A delegate for matching a recieved packet to the response</param>
         /// <returns></returns>
-        public static async Task<Packet> SendPacket(Packet p, IsPacketSuitable isSuitable)
+        internal static async Task<Packet> SendPacket(Packet p, IsPacketSuitable isSuitable)
         {
             await SendPacket(p);
             return await GetResponse(isSuitable);
@@ -71,7 +70,7 @@ namespace api
         /// <summary>
         /// Starts the neccessary threads for sending and recieving packets
         /// </summary>
-        public static void StartCommunication()
+        private static void StartCommunication()
         {
             _claimQueue.Clear();
             _fragments.Clear();

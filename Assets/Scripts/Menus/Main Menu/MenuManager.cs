@@ -104,7 +104,7 @@ public class MenuManager : MonoBehaviour
         if (groundClient)
             Debug.LogWarning("Client is grounded, it will not attempt to connect to the server");
         else
-            Client.JoinServer();
+            Client.StartClient();
     }
 
     private void CheckPromises()
