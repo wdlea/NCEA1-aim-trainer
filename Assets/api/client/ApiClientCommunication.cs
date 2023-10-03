@@ -1,357 +1,153 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
-using System.Threading;
+using System.Net.Sockets;
 using System.Text;
-using UnityEngine;
+using System.Threading.Tasks;
+
+#nullable enable
 
 namespace api
 {
+    public delegate bool IsPacketSuitable(Packet p);
+
     public static partial class Client
     {
-        const byte END_OF_PACKET = (byte)'\n';
         const int BUFFER_SIZE = 1024;
-        const int MAX_PACKET_LENGTH = 512;
+        const int PACKET_SIZE = 1024;
+        const byte PACKET_DELIMETER = (byte)'\n';
 
-        const int THREAD_SLEEP_TIME = 10;//ms, this will be slept for when the thread is waiting for something to save cpu ticks, increase for less processing power required, but 'coarser' gameplay
+        private static ConcurrentQueue<Claim> _claimQueue = new();
 
-        internal static ConcurrentQueue<RecievedPacket> recievedPackets;
-        internal static ConcurrentQueue<TransmittingPacket> sendQueue;
-        internal static ConcurrentQueue<ClaimTicket> recieveClaims;
-
-        public delegate void KillCoroutines();
-        internal static KillCoroutines killCoroutines = null;
-
-        /// <summary>
-        /// Creates the threads that handle networking.
-        /// Subsequent calls restart while clearing all 
-        /// means of communication between threads which
-        /// data may persist in between restarts.
-        /// <param name="surrogate">The monobehaviour to spawn the coroutine on
-        /// to allow it to interact with the game thread.</param>
-        /// </summary>
-        private static void StartThreads(MonoBehaviour surrogate)
+        public static async Task<Packet> GetResponse(IsPacketSuitable isSuitable)
         {
-            KillThreads();
+            Claim claim = new Claim(isSuitable);
 
-            sendQueue = new ConcurrentQueue<TransmittingPacket>();
-            recievedPackets = new ConcurrentQueue<RecievedPacket>();
-            recieveClaims = new ConcurrentQueue<ClaimTicket>();
+            _claimQueue.Enqueue(claim);
 
-            Coroutine claimsCoroutine = surrogate.StartCoroutine(HandleClaimsCoroutine());
-            Coroutine broadcastCoroutine = surrogate.StartCoroutine(HandleBroadcastsCoroutine());
-            Coroutine pruneCoroutine = surrogate.StartCoroutine(PruneRecievedCorutine());
+            Packet? result = await claim.WaitForResult();
 
-            Thread recievePackets = new Thread(RecievePacketsThread);
-            Thread sendPackets = new Thread(SendPacketsThread);
+            if (result is null)
+                throw new UnexpectedPacketException();
 
-
-            recievePackets.Priority = System.Threading.ThreadPriority.BelowNormal;
-            sendPackets.Priority = System.Threading.ThreadPriority.Normal;
-
-            recievePackets.Start();
-            sendPackets.Start();
-
-            killCoroutines = () =>
-            {
-                killCoroutines = null;
-
-                if (surrogate != null)//if surrogate has been destroyed, so will the coroutines
-                {
-                    surrogate.StopCoroutine(claimsCoroutine);
-                    surrogate.StopCoroutine(broadcastCoroutine);
-                    surrogate.StopCoroutine(pruneCoroutine);
-                }
-
-                recievePackets.Abort();
-                sendPackets.Abort();
-            };
+            return result;
         }
 
-        /// <summary>
-        /// Kills running threads and coroutines
-        /// </summary>
-        public static void KillThreads()
+        public static void DistributePacket(Packet p)
         {
-            killCoroutines?.Invoke();
-        }
-
-        /// <summary>
-        /// Handles the recieving of packets from the server. 
-        /// </summary>
-        private static void RecievePacketsThread()
-        {
-            List<byte> currentPacket = new List<byte>(MAX_PACKET_LENGTH);
-
-            while (IsConnected)
+            lock (_claimQueue)
             {
-                if (communicationSocket.Available > 0)
+                while (IsConnected)
                 {
-                    byte[] buf = new byte[BUFFER_SIZE];
-                    int n = communicationSocket.Receive(buf);
-                    buf = buf[..n];
-
-                    foreach (byte b in buf)
+                    if(_claimQueue.TryDequeue(out Claim claim))
                     {
-                        if (b == END_OF_PACKET)
-                        {
-                            Packet recieved = new Packet(currentPacket.ToArray());
-
-                            Debug.Log("Recieved Packet" + recieved.ToString());
-
-                            recievedPackets.Enqueue(new RecievedPacket(recieved));
-                            currentPacket.Clear();
-                        }
-                        else
-                        {
-                            currentPacket.Add(b);
-                            if (currentPacket.Count > MAX_PACKET_LENGTH)
-                            {
-                                throw new OversizedPacketException();
-                            }
-                        }
+                        if (claim.CheckPacket(p))
+                            return;
+                        else throw new UnexpectedPacketException();
                     }
                 }
-
-                Thread.Sleep(THREAD_SLEEP_TIME);
             }
         }
 
-        /// <summary>
-        /// Handles the sending of packets to the server. 
-        /// </summary>
-        private static void SendPacketsThread()
+        public static async Task SendPacket(Packet p)
         {
+            byte[] message = p.ToBytes();
+
+            await communicationSocket.SendAsync(message, SocketFlags.None);
+        }
+
+        public static async Task<Packet> SendPacket(Packet p, IsPacketSuitable isSuitable)
+        {
+            await SendPacket(p);
+            return await GetResponse(isSuitable);
+        }
+
+
+        private static Queue<byte[]> _fragments = new();
+        private static async void RecievePackets()
+        {
+            byte[] buffer = new byte[BUFFER_SIZE];
+
             while (IsConnected)
             {
-                if (sendQueue.TryDequeue(out TransmittingPacket toSend))
-                {
-                    Send(toSend.packet);
-                    recieveClaims.Enqueue(toSend.ticket);
-                }
-
-                Thread.Sleep(THREAD_SLEEP_TIME);
+                int num = await communicationSocket.ReceiveAsync(buffer, SocketFlags.None);
+                _fragments.Enqueue(buffer[0..num]);
             }
         }
 
-        /// <summary>
-        /// Handles the claims of packets from the recieve queues. 
-        /// </summary>
-        private static IEnumerator HandleClaimsCoroutine()
+        private static async void RecombobulatePackets()
         {
+            List<byte> currentPacket = new();
+
             while (IsConnected)
             {
-                if (recieveClaims.TryDequeue(out ClaimTicket ticket))
+                if (_fragments.TryDequeue(out byte[] fragment))
                 {
-                    RecievedPacket claimedPacket = default;
-                    do
+                    int index = Array.IndexOf(fragment, PACKET_DELIMETER);
+
+                    //IndexOf returns -1 if it could not find the packet
+
+                    if(index >= 0)
                     {
-                        if (recievedPackets.Count > 0)
-                        {
-                            claimedPacket = (
-                                from RecievedPacket p in recievedPackets
-                                where !p.claimed && (p.packet.type == ticket.expectedType || p.packet.type == PacketType.Error)
-                                select p
-                            ).FirstOrDefault();
-                        }
+                        currentPacket.AddRange(fragment[0..index]);
 
-                        if(claimedPacket == default)
-                            yield return null;//do as many packets as possible before surrendering control of thread
-                    } while (claimedPacket == default);
+                        byte[] bytes = currentPacket.ToArray();
+                        Packet p = new Packet(bytes);
 
-                    claimedPacket.claimed = true;
 
-                    ticket.onResponse(claimedPacket.packet);
+
+                        #pragma warning disable CS4014// I don't really care about when this returns, it handles that internally
+                        
+                        Task.Run(() => DistributePacket(p));
+
+                        #pragma warning restore CS4014
+
+                        currentPacket.Clear();
+                    }  
+                    else
+                        currentPacket.AddRange(fragment);
+                    
                 }
-                else yield return null;
+                else await Task.Yield();
             }
         }
-
-        /// <summary>
-        /// Handles the broadcast packets
-        /// </summary>
-        /// <returns></returns>
-        private static IEnumerator HandleBroadcastsCoroutine()
-        {
-            while (IsConnected)
-            {
-                yield return null;
-
-                IEnumerable<RecievedPacket> broadcastPackets =
-                    (
-                        from RecievedPacket p in recievedPackets
-                        where !p.claimed && p.packet.type == PacketType.ClientBoundBroadcast
-                        select p
-                    );
-
-                
-                
-                foreach(RecievedPacket packet in broadcastPackets)
-                {
-                    //transform packet
-                    Packet newPacket = new Packet(Encoding.ASCII.GetBytes(packet.packet.content));
-                    packet.claimed = true;
-                    Methods.HandleBroadcast(newPacket);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Repeatedly prunes the recieved packets queue
-        /// </summary>
-        /// <returns></returns>
-        private static IEnumerator PruneRecievedCorutine()
-        {
-            while (IsConnected)
-            {
-                recievedPackets = new ConcurrentQueue<RecievedPacket>(
-                    from RecievedPacket r in recievedPackets
-                    where !r.claimed
-                    select r
-                );
-
-                const float PRUNE_INTERVAL = 2.0f;//seconds
-
-                yield return new WaitForSeconds(PRUNE_INTERVAL);
-            }
-        }
-
-        /// <summary>
-        /// Sends a packet to the server, do not call this,
-        /// instead add the packet to the sendQueue.
-        /// </summary>
-        /// <param name="packet"></param>
-        private static void Send(Packet packet)
-        {
-            communicationSocket.Send(packet.ToBytes());
-            communicationSocket.Send(new[] { END_OF_PACKET });
-        }
-    }
-    
-    /// <summary>
-    /// A delegate that is called when a response is recieved for
-    /// a sent packet
-    /// </summary>
-    /// <param name="response">The response packet.</param>
-    public delegate void OnResponse(Packet response);
-
-    /// <summary>
-    /// A packet in the send queue, contains
-    /// a packet and ticket.
-    /// </summary>
-    internal struct TransmittingPacket
-    {
-        public Packet packet;
-        public ClaimTicket ticket;
     }
 
-    /// <summary>
-    /// A packet in the recieved queue
-    /// </summary>
-    internal class RecievedPacket
+    internal class Claim
     {
-        public RecievedPacket(Packet p)
+        public bool Cancelled { get; private set; }
+
+        private IsPacketSuitable _isSuitable;
+
+        private Packet? _result;
+
+        public Claim(IsPacketSuitable isSuitable)
         {
-            packet = p;
-            claimed = false;
+            _isSuitable = isSuitable;
         }
 
-        public bool claimed;
-        public Packet packet;
-    }
-
-    /// <summary>
-    /// A ticket that instructs the client what 
-    /// to do with the response it gets.
-    /// </summary>
-    public struct ClaimTicket
-    {
-        public OnResponse onResponse;
-        public PacketType expectedType;
-    }
-
-    /// <summary>
-    /// The type of packet.
-    /// </summary>
-    public enum PacketType
-    {
-        Error = 'E',
-
-        ServerBoundFrame = 'f',
-        ClientBoundFrameResponse = 'F',
-
-        ServerBoundName = 'n',
-        ClientBoundNameResponse = 'N',
-
-        ServerBoundJoin = 'j',
-        ClientBoundJoinResponse = 'J',
-
-        ServerBoundLeave = 'l',
-        ClientBoundLeaveResponse = 'L',
-
-        ServerBoundCreate = 'c',
-        ClientBoundCreateResponse = 'C',
-
-        ClientBoundBroadcast = 'B',
-
-        ServerBoundHitTarget = 'h',
-        ClientBoundHitTargetResponse = 'H',
-
-
-        ServerBoundTerminate = 't',
-    }
-
-    /// <summary>
-    /// A packet is a single "unit"
-    /// that gets sent to the server.
-    /// </summary>
-    [Serializable]
-    public class Packet
-    {
-        public readonly PacketType type;
-
-        public readonly string content;
-
-        public Packet(PacketType type, string message)
+        public void Cancel()
         {
-            this.type = type;
-            this.content = message;
+            Cancelled = true;
         }
 
-        public Packet(byte[] packet) : this(
-            (PacketType)(char)packet[0],
-            Encoding.ASCII.GetString(packet[1..]))
-        { }
-
-        public static Packet FromObject(PacketType type, object message)
+        public bool CheckPacket(Packet p)
         {
-            return new Packet(type, JsonUtility.ToJson(message));
+            bool suitable = _isSuitable(p);
+
+            if (suitable)
+                _result = p;
+
+            return suitable;
         }
 
-        public byte[] ToBytes()
+        public async Task<Packet?> WaitForResult()
         {
-            byte[] encodedType = Encoding.ASCII.GetBytes(
-                    new[] { (char)type }
-            );
+            while (!Cancelled && _result is null && Client.IsConnected)
+                await Task.Yield();
 
-            byte[] encodedMessage = Encoding.ASCII.GetBytes(
-                    content
-            );
-
-
-            return encodedType.Concat(encodedMessage).ToArray();
-        }
-
-
-        public static bool operator ==(Packet left, Packet right)
-        {
-            return (left.content == right.content) && (left.type == right.type);
-        }
-        public static bool operator !=(Packet left, Packet right)
-        {
-            return !(left == right);
+            return _result;
         }
     }
 }

@@ -37,7 +37,7 @@ namespace api
         public static void JoinServer()
         {
             ServerEndpoint = new IPEndPoint(IPAddress.Parse(SERVER_ADDR), SERVER_PORT);
-            StartThreads(Surrogate.Instance);
+            Start(Surrogate.Instance);
 
             Surrogate.onQuit.Enqueue(KillThreads);
         }
