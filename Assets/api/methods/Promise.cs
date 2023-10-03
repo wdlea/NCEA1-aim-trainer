@@ -23,7 +23,7 @@ namespace api
         public void Fulfil(T value)
         {
             if (Finished)
-                throw new System.InvalidOperationException("Cannot finish the same promise twice.");
+                throw new InvalidOperationException("Cannot finish the same promise twice.");
 
             this.value = value;
             Finished = true;
@@ -36,7 +36,7 @@ namespace api
         public void Fail(Exception error)
         {
             if (Finished)
-                throw new System.InvalidOperationException("Cannot finish the same promise twice.");
+                throw new InvalidOperationException("Cannot finish the same promise twice.");
 
             this.error = error;
             Finished = true;
@@ -64,16 +64,16 @@ namespace api
                     else if (this.error != null)
                     {
                         value = default;
-                        return this.error;
+                        return error;
                     }
                     else
                     {
-                        throw new System.Exception();//TODO, make actual exception
+                        throw new Exception();//TODO, make actual exception
                     }
                 }
             }
 
-            throw new System.TimeoutException("Get operation exceeded timeout");
+            throw new TimeoutException("Get operation exceeded timeout");
         }
     }
 }

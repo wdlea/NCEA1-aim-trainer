@@ -7,8 +7,8 @@ public abstract class Prop : Entity {
     public void Update()
     {
         PreUpdatePosition();
-        X += Dx * Time.deltaTime;
-        Y += Dy * Time.deltaTime;
+
+        ApplyMovement();
 
         ClampPosition();
         ApplyNormalizedPosition();

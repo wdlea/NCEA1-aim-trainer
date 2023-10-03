@@ -90,6 +90,7 @@ public class MenuManager : MonoBehaviour
         CheckConnection();
         CheckStartGame();
 
+        nameReloadButton.interactable = nameInput.text.Length > 0;
     }
 
     private void JoinGameScene()
@@ -186,6 +187,8 @@ public class MenuManager : MonoBehaviour
 
                 SetStatus(nameStatusIndicator, nameStatusCompleted);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusCompleted);
+
+                namePromise = null;
             }
             else
             {
@@ -193,17 +196,15 @@ public class MenuManager : MonoBehaviour
 
                 SetStatus(nameStatusIndicator, nameStatusError);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusError);
-            }
 
-            namePromise = null;
+                //namePromise = null;
+            }
         }
     }
 
     private void ApplyName()
     {
         string name = nameInput.text;
-        if (name.Length <= 0)
-            return;
 
         if (groundClient)
         {
@@ -215,8 +216,8 @@ public class MenuManager : MonoBehaviour
             namePromise = Methods.SetName(name);
         }
 
-        SetStatus(nameStatusIndicator, nameStatusPending);
-        SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
+        SetStatus(nameStatusIndicator, nameStatusAwaiting);
+        SetStatus(nameReloadButton, nameProceedButton, nameStatusAwaiting);
 
         namePending = true;
     }

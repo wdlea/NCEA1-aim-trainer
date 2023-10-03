@@ -10,6 +10,7 @@ namespace api.objects
     [Serializable]
     public class Target : Frame
     {
+        public float Scale, Dscale;
         public int ID;
     }
 }

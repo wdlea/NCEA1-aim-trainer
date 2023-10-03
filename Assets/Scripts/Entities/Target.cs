@@ -7,21 +7,32 @@ public class Target : Prop
         set
         {
             Frame = value;
-            ID = value.ID;
+            _ID = value.ID;
+            _scale = value.Scale;
+            _dScale = value.Dscale;
         }
     }
 
-    [SerializeField] int ID;
+    [SerializeField] float _baseScale;
+    [SerializeField] float _scale;
+    [SerializeField] float _dScale;
 
+    [SerializeField][ReadOnlyEditor] int _ID;
+   
     public void OnHit()
     {
-        Debug.Log("Ouch! ID: " + ID.ToString());
-        api.Methods.HitTarget(ID);
+        Debug.Log("Ouch! ID: " + _ID.ToString());
+        api.Methods.HitTarget(_ID);
     }
 
     protected override void PreUpdatePosition()
     {
+        _scale += _dScale * Time.deltaTime;
 
+        transform.localScale = _baseScale * _scale * Vector3.one;
+
+        if (_scale < 0.1f)
+            Destroy(gameObject);
     }
 
     protected override void PostUpdatePosition()
