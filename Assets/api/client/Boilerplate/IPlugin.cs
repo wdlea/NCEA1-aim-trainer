@@ -11,6 +11,7 @@ namespace api
         private static void AddPlugins()
         {
             _plugins.Clear();
+            _plugins.Add(new Plugins.Logger());
             _plugins.Add(new Plugins.Broadcasts());
         }
 
