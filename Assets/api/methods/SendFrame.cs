@@ -14,41 +14,31 @@ namespace api
         /// </summary>
         /// <param name="frame">The frame to send</param>
         /// <returns>A promise that resolves to the game state</returns>
-        public static Promise<Game> SendFrame(Frame frame)
+        public static async Task<Game> SendFrame(Frame frame)
         {
-            Promise<Game> promise = new Promise<Game>();
-
             Packet packet = Packet.FromObject(PacketType.ServerBoundFrame, frame);
 
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundFrameResponse,
-                onResponse = (Packet p) =>
+            Packet response = await Client.SendPacket(
+                packet,
+                (Packet p) =>
                 {
-                    if (p.type == PacketType.ClientBoundFrameResponse)
-                    {
-                        try
-                        {
-                            promise.Fulfil(JsonUtility.FromJson<Game>(p.content));
-                        }
-                        catch (Exception e)
-                        {
-                            promise.Fail(e);
-                        }
-                    }
-                    else
-                    {
-                        promise.Fail(new UnexpectedPacketException());
-                    }
-
-                    FrameCount++;
+                    return p.Type == PacketType.ClientBoundFrameResponse || p.Type == PacketType.Error;
                 }
-            };
+            );
 
-            Client.EnqueueSend(packet, ticket);
-            return promise;
+            if (response.Type == PacketType.ClientBoundFrameResponse)
+            {
+                FrameCount++;
+
+                return JsonUtility.FromJson<Game>(response.Content);
+            }
+            else throw new UnexpectedPacketException();
         }
 
+        /// <summary>
+        /// Waits for the next frame to be recieved from the server successfully
+        /// </summary>
+        /// <returns>The count of frames so far.</returns>
         public static async Task<int> WaitNextFrame()
         {
             int currentFrameCount = FrameCount;
