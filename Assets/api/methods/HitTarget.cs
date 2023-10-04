@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace api
@@ -10,19 +11,21 @@ namespace api
         /// Marks a target as "hit" on the server
         /// </summary>
         /// <param name="ID">The id of the target I shot</param>
-        public static void HitTarget(int ID)  
+        public static async Task HitTarget(int ID)
         {
             Packet packet = new Packet(
                 PacketType.ServerBoundHitTarget,
                 ID.ToString()
             );
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundHitTargetResponse,
-                onResponse = (Packet p) => { }
-            };
 
-            Client.EnqueueSend(packet, ticket);
+
+            //I don't really care what happens
+            await Client.SendPacket(
+                packet,
+                (Packet p) => {
+                    return p.Type == PacketType.ClientBoundHitTargetResponse || p.Type == PacketType.Error;
+                }
+            );
         }
     }
 }
