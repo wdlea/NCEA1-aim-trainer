@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace api { 
@@ -8,31 +9,21 @@ namespace api {
         /// Leaves the game the player is currently in.
         /// </summary>
         /// <returns>A promise resolving to true when the game has been left</returns>
-        public static Promise<bool> LeaveGame()
+        public static async Task LeaveGame()
         {
-            Debug.Log("Leaving Game");
-            Promise<bool> promise = new();
-
             Packet packet = new(PacketType.ServerBoundLeave, "");
 
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundLeaveResponse,
-                onResponse = (Packet p) =>
-                  {
-                      if (p.type == PacketType.ClientBoundLeaveResponse)
-                      {
-                          promise.Fulfil(true);
-                      }
-                      else
-                      {
-                          promise.Fail(new UnexpectedPacketException());
-                      }
-                  }
-            };
+            Packet response = await Client.SendPacket(
+                packet,
+                (Packet p) =>
+                {
+                    return p.Type == PacketType.ClientBoundLeaveResponse || p.Type == PacketType.Error;
+                }
+            );
 
-            Client.EnqueueSend(packet, ticket);
-            return promise;
+            if (response.Type != PacketType.ClientBoundLeaveResponse)
+                return;
+            else throw new UnexpectedPacketException();
         }
     }
 }
