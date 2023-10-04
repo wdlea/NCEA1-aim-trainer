@@ -15,6 +15,7 @@ namespace api
         /// </summary>
         public static void StartClient()
         {
+            AddPlugins();
             ServerEndpoint = new IPEndPoint(IPAddress.Parse(SERVER_ADDR), SERVER_PORT);
             StartCommunication();
         }
