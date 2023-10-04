@@ -58,17 +58,17 @@ namespace api.Plugins
         private static void HandleBroadcast(Packet broadcast)
         {
             //do stuff with packet
-            switch ((Broadcast)broadcast.type)
+            switch ((Broadcast)broadcast.Type)
             {
                 case Broadcast.StartGame:
                     {
-                        GameStartInterval = float.Parse(broadcast.content);
+                        GameStartInterval = float.Parse(broadcast.Content);
 
                         break;
                     }
                 case Broadcast.SpawnTarget:
                     {
-                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.content);
+                        objects.Target spawned = JsonUtility.FromJson<objects.Target>(broadcast.Content);
                         onTargetSpawn?.Invoke(spawned);
                         break;
                     }
@@ -77,7 +77,7 @@ namespace api.Plugins
                         int id;
                         try
                         {
-                            id = (int)float.Parse(broadcast.content);
+                            id = (int)float.Parse(broadcast.Content);
                         }
                         catch
                         {

@@ -65,12 +65,10 @@ namespace api
         public byte[] ToBytes()
         {
             byte[] encodedType = Encoding.ASCII.GetBytes(
-                    new[] { (char)type }
+                    new[] { (char)Type }
             );
 
-            byte[] encodedMessage = Encoding.ASCII.GetBytes(
-                    content
-            );
+            byte[] encodedMessage = Encoding.ASCII.GetBytes(Content);
 
 
             return encodedType.Concat(encodedMessage).ToArray();
@@ -79,7 +77,7 @@ namespace api
 
         public static bool operator ==(Packet left, Packet right)
         {
-            return (left.content == right.content) && (left.type == right.type);
+            return (left.Content == right.Content) && (left.Type == right.Type);
         }
         public static bool operator !=(Packet left, Packet right)
         {
