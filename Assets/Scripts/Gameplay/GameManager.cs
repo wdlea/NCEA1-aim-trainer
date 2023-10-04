@@ -48,7 +48,6 @@ public class GameManager : MonoBehaviour
         StartCoroutine(UpdateGame());
     }
 
-
     IEnumerator UpdateGame()
     {
         Task<Game>? game = null;

@@ -74,14 +74,23 @@ namespace api
             return encodedType.Concat(encodedMessage).ToArray();
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is Packet p && p.Type == Type && p.Content == Content;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)Type + Content.Length;
+        }
 
         public static bool operator ==(Packet left, Packet right)
         {
-            return (left.Content == right.Content) && (left.Type == right.Type);
+            return left.Equals(right);
         }
         public static bool operator !=(Packet left, Packet right)
         {
-            return !(left == right);
+            return !left.Equals(right);
         }
     }
 }
