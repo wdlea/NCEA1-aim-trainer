@@ -19,38 +19,22 @@ namespace api
         /// Creates a game.
         /// </summary>
         /// <returns>A promise resolving to the game code</returns>
-        public static Promise<string> CreateGame()
+        public static async Task<string> CreateGame()
         {
-            Debug.Log("Creating Game");
-
-            Promise<string> promise = new Promise<string>();
-
             Packet packet = new(PacketType.ServerBoundCreate, "");
 
+            Packet response = await Client.SendPacket(
+                packet,
+                (Packet p) =>
+                {
+                    return p.Type == PacketType.ClientBoundCreateResponse || p.Type == PacketType.Error;
+                }
+            );
 
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundCreateResponse,
-                onResponse = (Packet p) =>
-                  {
-                      if (p.type == PacketType.ClientBoundCreateResponse)
-                      {
-                          GameCode = p.content;
-                          promise.Fulfil(p.content);
-                      }
-                      else
-                      {
-                          promise.Fail(new UnexpectedPacketException());
-                      }
-                  }
-            };
+            if (response.Type != PacketType.ClientBoundCreateResponse)
+                throw new UnexpectedPacketException();
 
-
-            ResetGame();
-            IsHost = true;
-            Client.EnqueueSend(packet, ticket);
-
-            return promise;
+            return response.Content;
         }
     }
 }
