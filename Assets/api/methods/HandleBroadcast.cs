@@ -81,4 +81,12 @@ namespace api
             }
         }
     }
+
+    public class Broadcasts : Client.IPlugin
+    {
+        public Packet? Process(Packet p)
+        {
+            return p;
+        }
+    }
 }

@@ -94,11 +94,13 @@ namespace api
         }
 
         /// <summary>
-        /// Handles matching a packet to a claim
+        /// Handles executing plugins then matching a packet to a claim
         /// </summary>
         /// <param name="p">The packet to match</param>
-        private static void DistributePacket(Packet p)
+        private static void HandlePacket(Packet p)
         {
+            ApplyPlugins(p);
+
             lock (_claimQueue)
             {
                 while (IsConnected)
@@ -139,7 +141,7 @@ namespace api
 
                         #pragma warning disable CS4014// I don't really care about when this returns, it handles that internally
                         
-                        Task.Run(() => DistributePacket(p));
+                        Task.Run(() => HandlePacket(p));
 
                         #pragma warning restore CS4014
 
