@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 
 namespace api
@@ -16,32 +12,19 @@ namespace api
         /// </summary>
         /// <param name="name">The name to set</param>
         /// <returns>A promise resolving to the set name</returns>
-        public static Promise<string> SetName(string name)
+        public static async Task<string> SetName(string name)
         {
-            Debug.Log("Setting name");
-            Promise<string> promise = new Promise<string>();
-
             Packet packet = new Packet(PacketType.ServerBoundName, name);
 
-            ClaimTicket ticket = new ClaimTicket
-            {
-                expectedType = PacketType.ClientBoundNameResponse,
-                onResponse = (Packet p) =>
+            Packet response = await Client.SendPacket(
+                packet,
+                (Packet p) =>
                 {
-                    if (p.type == PacketType.ClientBoundNameResponse)
-                    {
-                        promise.Fulfil(p.content);
-                    }
-                    else
-                    {
-                        promise.Fail(new UnexpectedPacketException());
-                    }
+                    return p.Type == PacketType.ClientBoundNameResponse || p.Type == PacketType.Error;
                 }
-            };
+            );
 
-            Client.EnqueueSend(packet, ticket);
-
-            return promise;
+            return response.Content;
         }
     }
 }
