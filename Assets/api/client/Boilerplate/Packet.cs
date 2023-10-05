@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace api
             return new Packet(type, JsonUtility.ToJson(message));
         }
 
-        public byte[] ToBytes()
+        public byte[] ToBytes(IEnumerable<byte> suffix)
         {
             byte[] encodedType = Encoding.ASCII.GetBytes(
                     new[] { (char)Type }
@@ -71,7 +72,7 @@ namespace api
             byte[] encodedMessage = Encoding.ASCII.GetBytes(Content);
 
 
-            return encodedType.Concat(encodedMessage).ToArray();
+            return encodedType.Concat(encodedMessage).Concat(suffix).ToArray();
         }
 
         public override bool Equals(object obj)
