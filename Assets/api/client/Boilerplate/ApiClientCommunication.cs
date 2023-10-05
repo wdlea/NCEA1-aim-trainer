@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -20,8 +18,8 @@ namespace api
         const byte PACKET_DELIMETER = (byte)'\n';
         readonly static IEnumerable<byte> PACKET_DELIMETER_ARR = new[] { PACKET_DELIMETER };
 
-        private static ConcurrentQueue<Claim> _claimQueue = new();
-        private static Queue<byte[]> _fragments = new();
+        private static readonly ConcurrentQueue<Claim> _claimQueue = new();
+        private static readonly Queue<byte[]> _fragments = new();
 
         /// <summary>
         /// Gets the next packet recieved that fulfils isSuitable
@@ -34,11 +32,8 @@ namespace api
 
             _claimQueue.Enqueue(claim);
 
-            Packet? result = await claim.WaitForResult();
-
-            if (result is null)
-                throw new UnexpectedPacketException();
-
+            Packet? result = await claim.WaitForResult() ?? throw new UnexpectedPacketException();
+            
             return result;
         }
 
@@ -69,8 +64,6 @@ namespace api
             await SendPacket(p);
             return await GetResponse(isSuitable);
         }
-
-
         private delegate void Cleanup();
         private static Cleanup? _cleanup;
 
@@ -84,13 +77,15 @@ namespace api
             Task recieveTask = Task.Run(RecievePackets);
             Task processTask = Task.Run(ProcessFragments);
 
-            _cleanup = () =>
+            _cleanup = async () =>
             {
                 _cleanup = null;
-                recieveTask.Dispose();
-                processTask.Dispose();
+                Disconnect();
+
                 _claimQueue.Clear();
                 _fragments.Clear();
+
+                await Task.WhenAll(recieveTask, processTask);
             };
 
             Surrogate.onQuit.Enqueue(() => _cleanup?.Invoke());
