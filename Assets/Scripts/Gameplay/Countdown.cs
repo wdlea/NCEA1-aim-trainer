@@ -1,4 +1,5 @@
 using api;
+using api.Plugins;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ public class Countdown : MonoBehaviour
 
     private void Start()
     {
-        Methods.onResetGame += () =>
+        Broadcasts.onResetGame += () =>
         {
             _hasCountedDown = false;
         };
@@ -30,7 +31,7 @@ public class Countdown : MonoBehaviour
 
     private void Update()
     {
-        if(!_hasCountedDown && Methods.IsGameRunning)
+        if(!_hasCountedDown && Broadcasts.IsGameRunning)
         {
             StartCountdown();
             _hasCountedDown = true;

@@ -1,6 +1,8 @@
 using api;
+using api.Plugins;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,9 +15,9 @@ using UnityEngine.UI;
 /// </summary>
 public class MenuManager : MonoBehaviour
 {
-    Promise<string>? namePromise;
-    Promise<bool>? joinPromise;
-    Promise<string>? hostPromise;
+    Task<string>? namePromise;
+    Task<bool>? joinPromise;
+    Task<string>? hostPromise;
 
     [Header("User Input")]
     [SerializeField] private TMP_InputField nameInput;
@@ -104,7 +106,7 @@ public class MenuManager : MonoBehaviour
         if (groundClient)
             Debug.LogWarning("Client is grounded, it will not attempt to connect to the server");
         else
-            Client.JoinServer();
+            Client.StartClient();
     }
 
     private void CheckPromises()
@@ -116,12 +118,10 @@ public class MenuManager : MonoBehaviour
 
     private void CheckStartGame()
     {
-        if (Methods.IsGameActive)
+        if (Broadcasts.IsGameActive)
         {
             if (_startPending)
                 JoinGameScene();
-            //else //If the client does not want to start don't make them
-            //    throw new UnexpectedPacketException();//A game flagging as running when I am not waiting is unexpected
         }
     }
 
@@ -140,64 +140,63 @@ public class MenuManager : MonoBehaviour
 
     private void CheckHostPromise()
     {
-        if (hostPromise is not null && hostPromise.Finished)
+        if (hostPromise is not null && hostPromise.IsCompleted)
         {
-            if (hostPromise.Get(out string? code) is null)
+            try
             {
-                //successful host
+                string result = hostPromise.GetAwaiter().GetResult();
                 joinCodeText.gameObject.SetActive(true);
-                joinCodeText.text = code;
+                joinCodeText.text = result;
 
                 _startPending = true;
             }
-            else
+            catch(Exception e)
             {
-                //failure, undefined behavior so throw error
-                throw new UnexpectedPacketException();
+                throw e;
             }
         }
     }
 
     private void CheckJoinPromise()
     {
-        if (joinPromise is not null && joinPromise.Finished)
+        if (joinPromise is not null && joinPromise.IsCompleted)
         {
-            if (joinPromise.Get(out bool success) is null && success)
+            try
             {
-                //successful join
+                joinPromise.GetAwaiter().GetResult();
+
                 joinCodeText.gameObject.SetActive(false);
 
                 _startPending = true;
-            }
-            else
+            }catch(Exception e)
             {
-                //failure
-                throw new UnexpectedPacketException();
+                throw e;
             }
         }
     }
 
     private void CheckNamePromise()
     {
-        if (namePromise is not null && namePromise.Finished)
+        if (namePromise is not null && namePromise.IsCompleted)
         {
-            if (namePromise.Get(out string? newName) is null && newName != null)
+            try
             {
+                string newName = namePromise.GetAwaiter().GetResult();
+
                 GameManager.myName = newName;
 
                 SetStatus(nameStatusIndicator, nameStatusCompleted);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusCompleted);
-
-                namePromise = null;
-            }
-            else
+            }catch(Exception e)
             {
-                Debug.Log(namePromise.Get(out _));//log error
-
                 SetStatus(nameStatusIndicator, nameStatusError);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusError);
 
-                //namePromise = null;
+                throw e;
+            }
+            finally
+            {
+                namePromise = null;
             }
         }
     }
@@ -208,13 +207,14 @@ public class MenuManager : MonoBehaviour
 
         if (groundClient)
         {
-            namePromise = new Promise<string>();
-            namePromise.Fulfil(name);
+            TaskCompletionSource<string> source = new();
+            namePromise = source.Task;
+
+            source.SetResult(name);
         }
         else
-        {
             namePromise = Methods.SetName(name);
-        }
+        
 
         SetStatus(nameStatusIndicator, nameStatusAwaiting);
         SetStatus(nameReloadButton, nameProceedButton, nameStatusAwaiting);
@@ -257,7 +257,11 @@ public class MenuManager : MonoBehaviour
 
     private void ExitLimbo()
     {
+        #pragma warning disable CS4014 
+        //I don't really care when this completes, the server is written to handle the 
+        //packets in series, so this will complete before the next packet is handled.
         Methods.LeaveGame();
+        #pragma warning restore CS4014
     }
 
     void SetStatus(Image indicator, IndicatorStatus status)

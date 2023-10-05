@@ -56,6 +56,8 @@ namespace api
                 try
                 {
                     await communicationSocket.ConnectAsync(serverEndpoint);
+                    Debug.Log("Connected to server");
+                    StartCommunication();
                     return;
                 }
                 catch

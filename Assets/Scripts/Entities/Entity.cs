@@ -1,7 +1,4 @@
 using api;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -23,7 +20,7 @@ public class Entity : MonoBehaviour
 
     public api.objects.Frame Frame
     {
-        get => new api.objects.Frame { X = X, Y = Y, Dx = Dx, Dy = Dy };
+        get => new() { X = X, Y = Y, Dx = Dx, Dy = Dy };
         set
         {
             X = value.X;
@@ -70,6 +67,7 @@ public class Entity : MonoBehaviour
             DDy = (Dy - pDy) / dt;
 
             pX = X; pY = Y; pDx = Dx; pDy = Dy; pTime = Time.realtimeSinceStartup;
+            
         }
     }
 
