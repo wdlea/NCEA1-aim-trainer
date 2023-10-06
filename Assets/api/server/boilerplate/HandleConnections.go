@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/wdlea/aimtrainerAPI/logic"
+	"github.com/wdlea/aimtrainerAPI/handlers"
 	. "github.com/wdlea/aimtrainerAPI/objects"
 )
 
@@ -130,7 +130,7 @@ func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) 
 		}
 
 		//Handle the packet
-		resps, terminate := logic.HandlePacket(pak.Type, pak.Content, user)
+		resps, terminate := handlers.HandlePacket(pak.Type, pak.Content, user)
 
 		//If the handler says to terminate the connection, do so
 		if terminate {

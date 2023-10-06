@@ -1,4 +1,4 @@
-package logic
+package handlers
 
 import (
 	"fmt"

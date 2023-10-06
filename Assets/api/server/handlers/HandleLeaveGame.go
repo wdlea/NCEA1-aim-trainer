@@ -1,4 +1,4 @@
-package logic
+package handlers
 
 import (
 	. "github.com/wdlea/aimtrainerAPI/objects" //I like . imports
