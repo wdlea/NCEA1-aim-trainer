@@ -4,4 +4,4 @@ go 1.20
 
 require github.com/wdlea/GOGenericLinkedList v0.0.0-20230816220718-058b9a0bca40
 
-require github.com/wdlea/flatRaycast v1.1.0
+require github.com/wdlea/flatRaycast v1.2.1

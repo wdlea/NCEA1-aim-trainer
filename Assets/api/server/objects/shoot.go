@@ -1,6 +1,8 @@
 package objects
 
 import (
+	"math/rand"
+
 	"github.com/wdlea/flatRaycast/colliders"
 	"github.com/wdlea/flatRaycast/layer"
 	"github.com/wdlea/flatRaycast/point"
@@ -8,7 +10,7 @@ import (
 
 type colliderData struct {
 	IsTarget bool
-	ID       int
+	ID       float64
 }
 
 const BLOCK_LAYER_INDEX = 0
@@ -25,11 +27,29 @@ func (g *Game) InitCollisions() {
 	g.Layers.Layers = append(g.Layers.Layers, blockLayer, targetLayer)
 }
 
-func (p *Player) Shoot(point point.Point) (wasHit bool, hitID int) {
+func (p *Player) Shoot(shootPoint point.Point) (wasHit bool, hitID int) {
 	p.Game.DestructionLock.Lock()
 	defer p.Game.DestructionLock.Unlock()
 
-	data := p.Game.Layers.GetHit(point)
+	//regenerate the targets(they move, yay!)
+	p.Game.Layers.Layers[TARGET_LAYER_INDEX].Clear()
+	for target := p.Game.Targets.First; target != nil; target = target.Next {
+		col := colliders.Circle[colliderData]{
+			Centre: point.Point{
+				target.Value.X,
+				target.Value.Y,
+			},
+			Radius: target.Value.Scale,
+		}
+
+		//cast to interface
+		inter := colliders.ICollider[colliderData](col)
+
+		p.Game.Layers.Layers[TARGET_LAYER_INDEX].Colliders.AddLast(&inter)
+	}
+
+	//Get the hit
+	data := p.Game.Layers.GetHit(shootPoint)
 
 	if data.IsTarget {
 		return data.IsTarget, data.ID
@@ -39,7 +59,7 @@ func (p *Player) Shoot(point point.Point) (wasHit bool, hitID int) {
 
 type Block struct {
 	C1, C2 point.Point
-	ID     int
+	ID     float64
 }
 
 func (g *Game) AddBlockRandomly() {
@@ -54,12 +74,33 @@ func (g *Game) AddBlockRandomly() {
 	inter := colliders.ICollider[colliderData](collider)
 
 	collidersList.AddLast(&inter)
+
+	block := Block{
+		ID: g.CurrentBlockID,
+		C1: corner1,
+		C2: corner2,
+	}
+	g.CurrentBlockID++
+
+	//send add broadcast
+
+	_ = block
 }
 
+type ChanceSelector[ColliderData any] struct {
+	Chance float32
+}
+
+func (c ChanceSelector[ColliderData]) IsValid(collider colliders.ICollider[ColliderData]) bool {
+	return rand.Float32() < c.Chance
+}
+
+// Removes *at most* one block from the scene
 func (g *Game) DeleteBlockRandomly() {
+	objects := g.Layers.Layers[BLOCK_LAYER_INDEX].RemoveObjectsBySelector(ChanceSelector[colliderData]{Chance: 0.5}, 1)
 
-}
-
-func (g *Game) addTargetToSimulation(t Target) {
-
+	for _, obj := range objects {
+		//send destroy broadcast
+		_ = obj
+	}
 }

@@ -11,6 +11,7 @@ import (
 )
 
 type GameState int
+
 // creating "enums"(as close as you can get to them in GO, a custom type and some constants)
 const (
 	GAME_WAITING_FOR_PLAYERS GameState = iota
@@ -32,6 +33,7 @@ type Game struct {
 
 	Targets         ll.LinkedList[*Target] `json:"-"` //dont serialize, the data will be shared using broadcasts
 	CurrentTargetID float64                `json:"-"`
+	CurrentBlockID  float64                `json:"-"`
 
 	DestructionLock sync.Mutex   `json:"-"`
 	Done            chan int     `json:"-"`

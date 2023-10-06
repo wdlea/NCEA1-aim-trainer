@@ -38,3 +38,23 @@ func (l Layer[ColliderData]) GetHit(p point.Point) (ok bool, hit ColliderData) {
 	}
 	return false, *new(ColliderData) //default value
 }
+
+// Selects colliders based on the IsValid method
+type ColliderSelector[ColliderData any] interface {
+	// Whether to select the collider
+	IsValid(collider colliders.ICollider[ColliderData]) bool
+}
+
+// Removes all objects that match a given selector
+func (l Layer[ColliderData]) RemoveObjectsBySelector(selector ColliderSelector[ColliderData], numElements int) (res []ColliderData) {
+	res = make([]ColliderData, 0, numElements)
+
+	for current := l.Colliders.First; current != nil && numElements > 0; current = current.Next {
+		if selector.IsValid(*current.Value) {
+			numElements--
+			res = append(res, (*current.Pop(l.Colliders)).GetData())
+		}
+	}
+
+	return
+}

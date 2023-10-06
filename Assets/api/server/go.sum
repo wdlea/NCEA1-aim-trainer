@@ -6,3 +6,7 @@ github.com/wdlea/flatRaycast v1.0.2 h1:ZrdhlykDiel68f/Zf2IYwH28dR4MAKHuSrwfv3K+1
 github.com/wdlea/flatRaycast v1.0.2/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
 github.com/wdlea/flatRaycast v1.1.0 h1:YXy8wE+j8C7TkS45KnxBf9vqCsMtY5eoI6aioEkkHAM=
 github.com/wdlea/flatRaycast v1.1.0/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
+github.com/wdlea/flatRaycast v1.2.0 h1:MxL+vWNnyWNOgI3C1qFcOUFLNw05gcCW1hnZ0XWfikE=
+github.com/wdlea/flatRaycast v1.2.0/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
+github.com/wdlea/flatRaycast v1.2.1 h1:1Qj1fFg6VKSdFhFrw6ccPHEIT3HVmseyMVkfnb4QYZU=
+github.com/wdlea/flatRaycast v1.2.1/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
