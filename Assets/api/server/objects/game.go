@@ -7,6 +7,7 @@ import (
 	"time"
 
 	ll "github.com/wdlea/GOGenericLinkedList"
+	"github.com/wdlea/flatRaycast/layer"
 )
 
 type GameState int
@@ -22,6 +23,8 @@ const (
 type Game struct {
 	Players [2]*Player
 	State   GameState
+
+	Layers *layer.LayerGroup[colliderData] `json:"-"`
 
 	ListEntry *ll.LinkedListNode[*Game] `json:"-"` //`json:"-"` sets the custom name so it will not be marshalled
 

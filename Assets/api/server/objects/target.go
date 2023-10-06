@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	ll "github.com/wdlea/GOGenericLinkedList" //also, this code was by me too, becuase GOs builtin implemtation was bad
+	"github.com/wdlea/flatRaycast/colliders"
 )
 
 type Target struct {
@@ -15,6 +16,8 @@ type Target struct {
 
 	ID     float64
 	llNode *ll.LinkedListNode[*Target]
+
+	Collider *ll.LinkedListNode[colliders.Circle[colliderData]]
 }
 
 // spawns a target
@@ -32,8 +35,8 @@ func SpawnTarget(g *Game) {
 	t.DDx = (rand.Float64() - 0.5) * 25
 	t.DDy = (rand.Float64() - 0.5) * 25
 
-	t.Scale = (rand.Float64() * 3) + 0.25
-	t.Dscale = ((rand.Float64() - 0.5) / 2.5) //(-0.2)-(0.2)
+	t.Scale = 2 + rand.Float64() * 15 //2-17
+	t.Dscale = ((rand.Float64() - 0.5) * 8) // (-4) - (4)
 
 	t.llNode = g.Targets.AddLast(t)
 

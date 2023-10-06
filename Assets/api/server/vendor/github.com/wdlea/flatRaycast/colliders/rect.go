@@ -1,8 +1,6 @@
 package colliders
 
 import (
-	"math"
-
 	"github.com/wdlea/flatRaycast/point"
 )
 
@@ -14,8 +12,7 @@ type Rect[ColliderData any] struct {
 
 // Sets the corners of the rect, these corners need to be diagonally opposite
 func (r *Rect[_]) SetCorners(c1, c2 point.Point) {
-	r.MinX, r.MaxX = math.Min(c1[0], c2[0]), math.Max(c1[0], c2[0])
-	r.MinY, r.MaxY = math.Min(c1[1], c2[1]), math.Max(c1[1], c2[1])
+	r.MinX, r.MaxX, r.MinY, r.MaxY = point.Bounds(c1, c2)
 }
 
 // Determines whether the point is within the bounds of the rect, excluding edges

@@ -1,2 +1,8 @@
 github.com/wdlea/GOGenericLinkedList v0.0.0-20230816220718-058b9a0bca40 h1:m4iz34JXlsuZVBBKk/qPrcRXtIOpKVLJ2iOoZhcIX2g=
 github.com/wdlea/GOGenericLinkedList v0.0.0-20230816220718-058b9a0bca40/go.mod h1:k7FJcJWiyYI8dquPtJr92J2GxcwpfouBKzpACtEb1eA=
+github.com/wdlea/flatRaycast v1.0.1 h1:WVhFQOxWgT/J95SvYHsI9nvoGPFzbh/2IR6L3h27A7I=
+github.com/wdlea/flatRaycast v1.0.1/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
+github.com/wdlea/flatRaycast v1.0.2 h1:ZrdhlykDiel68f/Zf2IYwH28dR4MAKHuSrwfv3K+1GQ=
+github.com/wdlea/flatRaycast v1.0.2/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=
+github.com/wdlea/flatRaycast v1.1.0 h1:YXy8wE+j8C7TkS45KnxBf9vqCsMtY5eoI6aioEkkHAM=
+github.com/wdlea/flatRaycast v1.1.0/go.mod h1:8VNC7jcaOrPsI3Y9EAh/+tEoudCAVuenEUPfwC/RCbE=

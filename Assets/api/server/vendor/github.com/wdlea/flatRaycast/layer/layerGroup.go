@@ -5,7 +5,7 @@ import (
 )
 
 type LayerGroup[ColliderData any] struct {
-	Layers []Layer[ColliderData]
+	Layers []*Layer[ColliderData]
 }
 
 // Gets all the hits from all the layers
