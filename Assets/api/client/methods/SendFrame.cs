@@ -16,6 +16,7 @@ namespace api
         /// <returns>A promise that resolves to the game state</returns>
         public static async Task<Game> SendFrame(Frame frame)
         {
+            Debug.Log("Sending frame");
             Packet packet = Packet.FromObject(PacketType.ServerBoundFrame, frame);
 
             Packet response = await Client.SendPacket(

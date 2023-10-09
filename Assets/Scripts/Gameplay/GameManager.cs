@@ -52,6 +52,9 @@ public class GameManager : MonoBehaviour
     {
         Task<Game>? game = null;
 
+        while (!Broadcasts.IsGameRunning)
+            Task.Yield();//Yield until game start
+
         while (Broadcasts.IsGameRunning)
         {
             if (game is null)
