@@ -31,17 +31,11 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button joinGameButton;
     [SerializeField] private Button playButton;
 
-   
-
-
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
     [SerializeField] private Image nameStatusIndicator;
 
     [SerializeField] private TMP_Text joinCodeText;
-
-    #pragma warning restore CS8618
-
     [Serializable] struct IndicatorStatus
     {
         public Color statusColour;
@@ -79,6 +73,7 @@ public class MenuManager : MonoBehaviour
     private static bool _startPending = false;
     private static bool namePending = false;
 
+    #pragma warning restore CS8618
     private void Start()
     {
         StartJoinServer();
@@ -151,8 +146,6 @@ public class MenuManager : MonoBehaviour
                 string result = hostPromise.GetAwaiter().GetResult();
                 joinCodeText.gameObject.SetActive(true);
                 joinCodeText.text = result;
-
-                _startPending = true;
             }
             catch(Exception e)
             {
@@ -170,8 +163,6 @@ public class MenuManager : MonoBehaviour
                 joinPromise.GetAwaiter().GetResult();
 
                 joinCodeText.gameObject.SetActive(false);
-
-                _startPending = true;
             }catch(Exception e)
             {
                 throw e;
@@ -256,11 +247,14 @@ public class MenuManager : MonoBehaviour
     {
         UICarousel.TargetPosition = limboCarouselPosition;
 
+        _startPending = true;
+
         backButton.onBackCalls.Enqueue(ExitLimbo);
     }
 
     private void ExitLimbo()
     {
+        _startPending = false;
         #pragma warning disable CS4014 
         //I don't really care when this completes, the server is written to handle the 
         //packets in series, so this will complete before the next packet is handled.
