@@ -99,7 +99,7 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(gameSceneIndex, LoadSceneMode.Additive);
         SceneManager.UnloadSceneAsync(menuSceneIndex);
     }
-
+    
     private void StartJoinServer()
     {
         if (groundClient)
@@ -108,6 +108,7 @@ public class MenuManager : MonoBehaviour
             Client.StartClient();
     }
 
+    #region statusUpdates
     private void CheckPromises()
     {
         CheckNamePromise();
@@ -137,6 +138,9 @@ public class MenuManager : MonoBehaviour
         playButton.enabled = isConnected;
     }
 
+    #endregion statusUpdates
+
+    #region promiseChecking
     private void CheckHostPromise()
     {
         if (hostPromise is not null && hostPromise.IsCompleted)
@@ -196,6 +200,9 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    #endregion promiseChecking
+
+    #region buttonMethods
     private void ApplyName()
     {
         string name = nameInput.text;
@@ -243,6 +250,9 @@ public class MenuManager : MonoBehaviour
         joinPromise = Methods.JoinGame(codeInput.text.ToLower());
     }
 
+    #endregion buttonMethods
+
+    #region limbo
     private void EnterLimbo()
     {
         UICarousel.TargetPosition = limboCarouselPosition;
@@ -262,6 +272,9 @@ public class MenuManager : MonoBehaviour
         #pragma warning restore CS4014
     }
 
+    #endregion limbo
+
+    #region statusIndicators
     void SetStatus(Image indicator, IndicatorStatus status)
     {
         indicator.sprite = status.statusIcon;
@@ -279,4 +292,6 @@ public class MenuManager : MonoBehaviour
         SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
     }
     void SetNamePending(object o) => SetNamePending();
+
+    #endregion statusIndicators
 }
