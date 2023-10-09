@@ -20,6 +20,8 @@ public class MenuManager : MonoBehaviour
     Task<string>? hostPromise;
 
     [Header("User Input")]
+
+    #pragma warning disable CS8618//they are filled out in the editor
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private TMP_InputField codeInput;
     
@@ -29,6 +31,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button joinGameButton;
     [SerializeField] private Button playButton;
 
+   
 
 
     [Header("Displays")]
@@ -37,7 +40,8 @@ public class MenuManager : MonoBehaviour
 
     [SerializeField] private TMP_Text joinCodeText;
 
-    
+    #pragma warning restore CS8618
+
     [Serializable] struct IndicatorStatus
     {
         public Color statusColour;
