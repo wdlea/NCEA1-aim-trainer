@@ -4,6 +4,7 @@ using api.objects;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -57,15 +58,18 @@ public class GameManager : MonoBehaviour
 
         while (Broadcasts.IsGameRunning)
         {
-            if (game is null)
-                game = Methods.SendFrame(me.Frame);
-            else if (game.IsCompleted)
+            if (game is not null && game.IsCompleted)
             {
-                Game result = game.GetAwaiter().GetResult();
-
-                ApplyGame(result);
-                game = null;
+                try{
+                    Game result = game.GetAwaiter().GetResult();
+                    ApplyGame(result);
+                }finally{
+                    game = null;    
+                }
             }
+
+            // create new game if the current one is null
+            game ??= Methods.SendFrame(me.Frame);
 
             yield return null;
         }
