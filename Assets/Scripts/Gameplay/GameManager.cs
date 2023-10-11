@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
         Task<Game>? game = null;
 
         while (!Broadcasts.IsGameRunning)
-            Task.Yield();//Yield until game start
+            yield return null;//Yield until game start
 
         while (Broadcasts.IsGameRunning)
         {
@@ -69,6 +69,7 @@ public class GameManager : MonoBehaviour
 
             yield return null;
         }
+        
     }
 
     void ApplyGame(Game game)
