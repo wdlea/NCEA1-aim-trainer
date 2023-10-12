@@ -67,7 +67,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private int gameSceneIndex;
     [SerializeField] private int menuSceneIndex;
 
-    public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
+    public static bool CanJoin => GameManager.MyName.Length > 0 && Client.IsConnected && !namePending;
 
    
     private static bool _startPending = false;
@@ -182,7 +182,7 @@ public class MenuManager : MonoBehaviour
             {
                 string newName = namePromise.GetAwaiter().GetResult();
 
-                GameManager.myName = newName;
+                GameManager.MyName = newName;
 
                 SetStatus(nameStatusIndicator, nameStatusCompleted);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusCompleted);
