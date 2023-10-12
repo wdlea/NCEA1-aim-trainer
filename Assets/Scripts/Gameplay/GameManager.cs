@@ -58,6 +58,11 @@ public class GameManager : MonoBehaviour
 
         while (Broadcasts.IsGameRunning)
         {
+            // create new game if the current one is null
+            game ??= Methods.SendFrame(me.Frame);
+
+            yield return null;
+
             if (game is not null && game.IsCompleted)
             {
                 try{
@@ -67,11 +72,6 @@ public class GameManager : MonoBehaviour
                     game = null;    
                 }
             }
-
-            // create new game if the current one is null
-            game ??= Methods.SendFrame(me.Frame);
-
-            yield return null;
         }
         
     }
