@@ -77,7 +77,7 @@ func (p *Player) JoinGame(g *Game) (ok bool) {
 		//reset and start game
 		p.resetPos()
 
-		g.StartGame()
+		go g.StartGame()
 	}
 
 	return
