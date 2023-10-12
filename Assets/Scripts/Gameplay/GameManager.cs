@@ -42,11 +42,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        _timeLeft.text = "??:??";
+        Debug.Log("Start");
+        _timeLeft.text = "??:??";//I renamed it and hadn't set it in the editior, thus NullReferenceException
         _targets = new();
         _players = new();
 
-        StartCoroutine(UpdateGame());
+        StartCoroutine(UpdateGame());//so this was not called
     }
 
     IEnumerator UpdateGame()
