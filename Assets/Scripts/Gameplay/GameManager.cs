@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 #nullable enable
 
@@ -55,22 +56,24 @@ public class GameManager : MonoBehaviour
 
         while (Broadcasts.IsGameRunning)
         {
-            // create new game if the current one is null
-            game ??= Methods.SendFrame(_me.Frame);
-
-            yield return null;
-
-            if (game is not null && game.IsCompleted)
+            if (game is not null)
             {
+                yield return null;
+
                 try{
-                    Game result = game.GetAwaiter().GetResult();
-                    ApplyGame(result);
-                }finally{
-                    game = null;    
+                    if(game.IsCompletedSuccessfully){
+                        Game result = game.GetAwaiter().GetResult();
+                        ApplyGame(result);
+                    }else if(game.IsFaulted || game.IsCanceled){
+                        game.GetAwaiter().GetResult();
+                    }else continue;//go back to start if promise not fulfiled
+                }catch(Exception e){
+                    Debug.LogError(e);
                 }
             }
-        }
-        
+            //create a new frame request
+            game = Methods.SendFrame(_me.Frame);
+        }  
     }
 
     void ApplyGame(Game game)
