@@ -22,7 +22,7 @@ namespace api.Plugins
             return p;
         }
 
-        public static float? GameStartInterval = null;
+        public static float? GameStartInterval {get; private set;}
 
         public static bool IsGameActive => GameStartInterval is not null;
         public static bool IsGameRunning => IsGameActive && GameStartInterval <= 0;

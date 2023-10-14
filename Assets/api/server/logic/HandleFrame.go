@@ -9,6 +9,8 @@ import (
 
 // Handles the 'f' packet, which is whenever the client wishes to update their position and velocity with the server
 func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool) {
+	fmt.Printf("Handling Frame from %s\n", user.Name)
+
 	//create the frame object and unmarshal the JSON into it
 	var frame Frame
 	err := json.Unmarshal(pak, &frame)

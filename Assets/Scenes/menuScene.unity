@@ -1416,7 +1416,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Some \nCool \nname"
+  m_text: 'RAD
+
+    IAN
+
+    CE'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 64e1c4d2a61bedb409a7f4656d37214e, type: 2}
   m_sharedMaterial: {fileID: -1004233303355325567, guid: 64e1c4d2a61bedb409a7f4656d37214e, type: 2}
@@ -1443,13 +1447,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 90
-  m_fontSizeBase: 90
+  m_fontSize: 103.2
+  m_fontSizeBase: 103.2
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 17
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535

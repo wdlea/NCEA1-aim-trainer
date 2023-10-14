@@ -20,6 +20,8 @@ public class MenuManager : MonoBehaviour
     Task<string>? hostPromise;
 
     [Header("User Input")]
+
+    #pragma warning disable CS8618//they are filled out in the editor
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private TMP_InputField codeInput;
     
@@ -29,15 +31,11 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button joinGameButton;
     [SerializeField] private Button playButton;
 
-
-
     [Header("Displays")]
     [SerializeField] private Image serverConnectionIndicator;
     [SerializeField] private Image nameStatusIndicator;
 
     [SerializeField] private TMP_Text joinCodeText;
-
-    
     [Serializable] struct IndicatorStatus
     {
         public Color statusColour;
@@ -69,12 +67,13 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private int gameSceneIndex;
     [SerializeField] private int menuSceneIndex;
 
-    public static bool CanJoin => GameManager.myName.Length > 0 && Client.IsConnected && !namePending;
+    public static bool CanJoin => GameManager.MyName.Length > 0 && Client.IsConnected && !namePending;
 
    
     private static bool _startPending = false;
     private static bool namePending = false;
 
+    #pragma warning restore CS8618
     private void Start()
     {
         StartJoinServer();
@@ -100,7 +99,7 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(gameSceneIndex, LoadSceneMode.Additive);
         SceneManager.UnloadSceneAsync(menuSceneIndex);
     }
-
+    
     private void StartJoinServer()
     {
         if (groundClient)
@@ -109,6 +108,7 @@ public class MenuManager : MonoBehaviour
             Client.StartClient();
     }
 
+    #region statusUpdates
     private void CheckPromises()
     {
         CheckNamePromise();
@@ -138,6 +138,9 @@ public class MenuManager : MonoBehaviour
         playButton.enabled = isConnected;
     }
 
+    #endregion statusUpdates
+
+    #region promiseChecking
     private void CheckHostPromise()
     {
         if (hostPromise is not null && hostPromise.IsCompleted)
@@ -147,8 +150,6 @@ public class MenuManager : MonoBehaviour
                 string result = hostPromise.GetAwaiter().GetResult();
                 joinCodeText.gameObject.SetActive(true);
                 joinCodeText.text = result;
-
-                _startPending = true;
             }
             catch(Exception e)
             {
@@ -166,8 +167,6 @@ public class MenuManager : MonoBehaviour
                 joinPromise.GetAwaiter().GetResult();
 
                 joinCodeText.gameObject.SetActive(false);
-
-                _startPending = true;
             }catch(Exception e)
             {
                 throw e;
@@ -183,7 +182,7 @@ public class MenuManager : MonoBehaviour
             {
                 string newName = namePromise.GetAwaiter().GetResult();
 
-                GameManager.myName = newName;
+                GameManager.MyName = newName;
 
                 SetStatus(nameStatusIndicator, nameStatusCompleted);
                 SetStatus(nameReloadButton, nameProceedButton, nameStatusCompleted);
@@ -201,6 +200,9 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    #endregion promiseChecking
+
+    #region buttonMethods
     private void ApplyName()
     {
         string name = nameInput.text;
@@ -248,15 +250,21 @@ public class MenuManager : MonoBehaviour
         joinPromise = Methods.JoinGame(codeInput.text.ToLower());
     }
 
+    #endregion buttonMethods
+
+    #region limbo
     private void EnterLimbo()
     {
         UICarousel.TargetPosition = limboCarouselPosition;
+
+        _startPending = true;
 
         backButton.onBackCalls.Enqueue(ExitLimbo);
     }
 
     private void ExitLimbo()
     {
+        _startPending = false;
         #pragma warning disable CS4014 
         //I don't really care when this completes, the server is written to handle the 
         //packets in series, so this will complete before the next packet is handled.
@@ -264,6 +272,9 @@ public class MenuManager : MonoBehaviour
         #pragma warning restore CS4014
     }
 
+    #endregion limbo
+
+    #region statusIndicators
     void SetStatus(Image indicator, IndicatorStatus status)
     {
         indicator.sprite = status.statusIcon;
@@ -281,4 +292,6 @@ public class MenuManager : MonoBehaviour
         SetStatus(nameReloadButton, nameProceedButton, nameStatusPending);
     }
     void SetNamePending(object o) => SetNamePending();
+
+    #endregion statusIndicators
 }
