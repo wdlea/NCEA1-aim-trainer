@@ -47,6 +47,8 @@ public class Target : Prop
     /// </summary>
     public void DestroyTarget()
     {
+        ScreenShaker.Instance.Shake();
+        SFXManager.Active.PlayShot();
         Destroy(gameObject);
     }
 }
