@@ -22,7 +22,9 @@ public class Target : Prop
     public void OnHit()
     {
         Debug.Log("Ouch! ID: " + _ID.ToString());
-        api.Methods.HitTarget(_ID);
+        _ = api.Methods.HitTarget(_ID);
+
+        DestroyTarget();
     }
 
     protected override void PreUpdatePosition()
@@ -45,7 +47,8 @@ public class Target : Prop
     /// </summary>
     public void DestroyTarget()
     {
-        
+        ScreenShaker.Instance.Shake();
+        SFXManager.Active.PlayShot();
         Destroy(gameObject);
     }
 }
