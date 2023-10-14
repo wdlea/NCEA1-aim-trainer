@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +39,11 @@ public class Jukebox : MonoBehaviour
 
         nextTrack.onClick.AddListener(PlayRandom);
         restartTrack.onClick.AddListener(RestartCurrent);
+    }
+
+    void Update(){
+        if(musicSource.time >= CurrentClip.length)
+            PlayRandom();
     }
 
     void PlayRandom()
