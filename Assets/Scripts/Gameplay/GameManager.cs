@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
 
     public static string MyName = "";//todo, keep track of this in methods instead of here
 
-    private void Awake()//I know that this is bad Unity code(I'm meant to use Awake()), but Unity wasnt keeping its side of the deal and didn't actually call the code
+    private void Awake()
     {
         Broadcasts.onTargetSpawn = OnTargetSpawn;
         Broadcasts.onHitTarget = OnTargetDestroy;
