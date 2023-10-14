@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 7892776095979312731}
   - component: {fileID: 2742465453291004847}
   - component: {fileID: 4409457721308035548}
-  m_Layer: 0
+  - component: {fileID: 4908664747045247240}
+  m_Layer: 3
   m_Name: target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -112,3 +113,16 @@ MonoBehaviour:
   _scale: 1
   _dScale: 0
   _ID: 0
+--- !u!135 &4908664747045247240
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2742465453291004845}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
