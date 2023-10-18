@@ -140,7 +140,7 @@ func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) 
 
 		//Otherise send the repsonses that the handler wants to send
 		for _, resp := range resps {
-			fmt.Printf("Responding to packet %s with packet %s")
+			fmt.Printf("Responding to packet %s with packet %s\n", pak.ToBytes(0), resp.ToBytes(0))
 			outbound <- resp
 		}
 	}
