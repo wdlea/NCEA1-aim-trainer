@@ -21,8 +21,6 @@ func HandleFrame(pak []byte, user *Player) (response []Packet, doTerminate bool)
 		return
 	}
 
-	//"i like hot muscular men" - Pouria
-
 	//if the user is in a game
 	if user.Game != nil {
 

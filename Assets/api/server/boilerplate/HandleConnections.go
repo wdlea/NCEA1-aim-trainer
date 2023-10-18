@@ -140,6 +140,7 @@ func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) 
 
 		//Otherise send the repsonses that the handler wants to send
 		for _, resp := range resps {
+			fmt.Printf("Responding to packet %s with packet %s")
 			outbound <- resp
 		}
 	}
@@ -157,12 +158,8 @@ func HandleSend(outbound <-chan Packet, conn net.Conn) {
 			return
 		}
 
-		//create byte representation of packet
-		bytesToSend := append([]byte{currentSend.Type}, currentSend.Content...)
-		bytesToSend = append(bytesToSend, PACKET_SEPERATOR)
-
 		//send the above representation
-		_, err := conn.Write(bytesToSend)
+		_, err := conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
 
 		//if there was an error, print it and cascade down
 		if err != nil {
