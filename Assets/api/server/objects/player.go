@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"sync"
 )
 
 const GAME_NAME_LENGTH = 8
@@ -19,7 +20,8 @@ type Player struct {
 
 	X, Y, Dx, Dy, DDx, DDy float64
 
-	Conn net.Conn `json:"-"`
+	Conn     net.Conn   `json:"-"`
+	ConnLock sync.Mutex `json:"-"`
 
 	Score float64
 }
@@ -57,10 +59,10 @@ func (p *Player) HostGame() (ok bool) {
 
 // joins a game
 func (p *Player) JoinGame(g *Game) (ok bool) {
-	fmt.Printf("Player %s joining game %s\n", p.Name, g.Name)
 
 	//leave the current game
 	p.LeaveGame()
+	fmt.Printf("Player %s joining game %s\n", p.Name, g.Name)
 
 	//make sure there is space for me
 	ok = g.Players[1] == nil
@@ -137,6 +139,9 @@ const BROADCAST_PREFIX = 'B'
 
 // sends a broadcast to the player
 func (p *Player) SendBroadcast(message Packet) {
+	p.ConnLock.Lock()
+	defer p.ConnLock.Unlock()
+
 	p.Conn.Write([]byte(fmt.Sprintf(
 		string(BROADCAST_PREFIX)+"%s%s\n",
 		string(message.Type),

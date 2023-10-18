@@ -34,7 +34,7 @@ func HandleConn(conn net.Conn) {
 	go HandlePackets(inboundPacketChan, outboundPacketChan, user)
 
 	//not this one though becuase the defer calls would execute immediately, if one of the pther threads errors out, it will cascade down to this one and stop it
-	HandleSend(outboundPacketChan, conn)
+	HandleSend(outboundPacketChan, user)
 }
 
 // Handles retrieving data from incoming sockets
@@ -147,7 +147,7 @@ func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) 
 }
 
 // this handles sending the packets
-func HandleSend(outbound <-chan Packet, conn net.Conn) {
+func HandleSend(outbound <-chan Packet, user *Player) {
 	defer fmt.Println("Conn closed")
 	for {
 		//read from the channel
@@ -158,8 +158,10 @@ func HandleSend(outbound <-chan Packet, conn net.Conn) {
 			return
 		}
 
+		user.ConnLock.Lock()
+		defer user.ConnLock.Unlock()
 		//send the above representation
-		_, err := conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
+		_, err := user.Conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
 
 		//if there was an error, print it and cascade down
 		if err != nil {
