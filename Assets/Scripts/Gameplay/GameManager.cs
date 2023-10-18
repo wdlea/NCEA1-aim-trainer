@@ -71,9 +71,11 @@ public class GameManager : MonoBehaviour
                     Debug.LogError(e);
                 }
             }
+
             //create a new frame request
             game = Methods.SendFrame(_me.Frame);
         }  
+        Debug.Log("Game stopped");
     }
 
     void ApplyGame(Game game)

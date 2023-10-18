@@ -114,21 +114,25 @@ namespace api
         /// <param name="p">The packet to match</param>
         private static async Task<bool> HandlePacket(Packet p)
         {
-            if (ApplyPlugins(p) is null) return true;
+            Packet? processed = ApplyPlugins(p);
+            if (processed is null) return true;
+            p = processed;
 
             int attempt = 0;
             const int MAX_ATTEMPTS = 3;
 
             while (IsConnected && attempt++ < MAX_ATTEMPTS)
             {
-                while (_claimQueue.TryDequeue(out Claim claim))
+                while (_claimQueue.TryPeek(out Claim claim))
                 {
-                    if (claim.CheckPacket(p))
+                    if (claim.CheckPacket(p)){
+                        _claimQueue.TryDequeue(out _);//dequeue packet
                         return true;
-                    else throw new UnexpectedPacketException();
+                    }
+                    else throw new UnexpectedPacketException();//packets are FIFO
                 }
 
-                await AtLeastNextRenderFrame();
+                await AtLeastNextRenderFrame();//here so i can remove the exception on false if I decide to change how packets are handled
             }
 
             return false;
@@ -162,7 +166,7 @@ namespace api
                         currentPacket.Clear();
 
                         if (!await packetMatch)
-                            Debug.Log("Unable to match prior packet");
+                            Debug.Log("Unable to match packet");
                     }  
                     else
                         currentPacket.AddRange(fragment);

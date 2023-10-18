@@ -7,7 +7,7 @@ namespace api
 {
     public static partial class Client
     {
-        const string SERVER_ADDR = "192.168.1.70";
+        const string SERVER_ADDR = "172.0.0.1";
         const int SERVER_PORT = 80;
 
         /// <summary>
