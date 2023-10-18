@@ -161,7 +161,8 @@ func HandleSend(outbound <-chan Packet, user *Player) {
 		user.ConnLock.Lock()
 		defer user.ConnLock.Unlock()
 		//send the above representation
-		_, err := user.Conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
+		n, err := user.Conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
+		fmt.Printf("%d bytes were send to %s", n, user.Name)
 
 		//if there was an error, print it and cascade down
 		if err != nil {
