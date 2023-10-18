@@ -10,7 +10,7 @@ namespace api.Plugins
         StringBuilder _builder = new();
         public Packet? Process(Packet p)
         {
-            lock(builder){
+            lock(_builder){
                 _builder.Clear();
                 _builder.Append("Packet recieved of type '");
                 _builder.Append(p.Type);

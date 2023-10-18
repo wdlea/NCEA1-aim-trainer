@@ -62,16 +62,18 @@ public class GameManager : MonoBehaviour
 
                 try{
                     if(game.IsCompletedSuccessfully){
+                        Debug.Log("Frame successfully sent");
                         Game result = game.GetAwaiter().GetResult();
                         ApplyGame(result);
-                    }else if(game.IsFaulted || game.IsCanceled){
+                    }else if(game.IsCompleted || game.IsFaulted || game.IsCanceled){
+                        Debug.Log("Frame unsucessful");
                         game.GetAwaiter().GetResult();
                     }else continue;//go back to start if promise not fulfiled
                 }catch(Exception e){
                     Debug.LogError(e);
                 }
             }
-
+            Debug.Log("Creating new frame request");
             //create a new frame request
             game = Methods.SendFrame(_me.Frame);
         }  
@@ -80,11 +82,14 @@ public class GameManager : MonoBehaviour
 
     void ApplyGame(Game game)
     {
+        Debug.Log("applying game");
         if (game.Players is null)
             return;
 
+        Debug.Log("applying players");
         foreach (Player player in game.Players)
         {
+            Debug.Log("applying player called " + player.Name);
             if(player.Name == MyName)
             {
                 _myScore.text = player.Score.ToString().PadLeft(3, '0');
