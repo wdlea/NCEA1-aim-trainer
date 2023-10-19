@@ -150,44 +150,56 @@ func HandlePackets(inbound <-chan Packet, outbound chan<- Packet, user *Player) 
 func HandleSend(outbound <-chan Packet, user *Player) {
 	defer fmt.Println("Conn closed")
 	for {
-		//read from the channel
-		currentSend, ok := <-outbound
-
-		//if it isnt open cascade down
-		if !ok {
-			fmt.Println("Outbound channel closed, stopping send thread")
+		if DoSendIteration(outbound, user) {
 			return
 		}
+	}
+}
 
-		fmt.Println("Waiting for user lock to send packets to server")
+func DoSendIteration(outbound <-chan Packet, user *Player) (doTerminate bool) {
+	//read from the channel
+	currentSend, ok := <-outbound
+
+	//if it isnt open cascade down
+	if !ok {
+		fmt.Println("Outbound channel closed, stopping send thread")
+		return true
+	}
+
+	fmt.Println("Waiting for user lock to send packets to server")
+
+	if !user.ConnLock.TryLock() {
+		fmt.Println("Unable to get lock first try")
 		user.ConnLock.Lock()
-		defer user.ConnLock.Unlock()
-		fmt.Println("Acquired lock")
+	}
 
-	sendLoop:
-		for {
-			//send the above representation
-			n, err := user.Conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
-			fmt.Printf("%d bytes were send to %s\n", n, user.Name)
+	defer user.ConnLock.Unlock()
+	fmt.Println("Acquired lock")
 
-			//if there was an error, print it and cascade down
-			if err != nil {
-				fmt.Printf("Error in writing to connection: %s\n", err.Error())
-				return
-			}
+sendLoop:
+	for {
+		//send the above representation
+		n, err := user.Conn.Write(currentSend.ToBytes(PACKET_SEPERATOR))
+		fmt.Printf("%d bytes were send to %s\n", n, user.Name)
 
-			//check for remaining packets in channel
-			select {
-			case currentSend, ok = <-outbound: //continue if there is another packet
-				if !ok {
-					fmt.Println("Outbound channel closed, stopping send thread")
-					return
-				}
-				continue
-			default: //otherwise break the loop and unlock the lock(defer statement)
-				break sendLoop
-			}
+		//if there was an error, print it and cascade down
+		if err != nil {
+			fmt.Printf("Error in writing to connection: %s\n", err.Error())
+			return true
 		}
 
+		//check for remaining packets in channel
+		select {
+		case currentSend, ok = <-outbound: //continue if there is another packet
+			if !ok {
+				fmt.Println("Outbound channel closed, stopping send thread")
+				return true
+			}
+			continue
+		default: //otherwise break the loop and unlock the lock(defer statement)
+			break sendLoop
+		}
 	}
+
+	return false
 }

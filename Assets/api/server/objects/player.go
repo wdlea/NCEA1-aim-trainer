@@ -139,12 +139,14 @@ const BROADCAST_PREFIX = 'B'
 
 // sends a broadcast to the player
 func (p *Player) SendBroadcast(message Packet) {
-	p.ConnLock.Lock()
-	defer p.ConnLock.Unlock()
-
-	p.Conn.Write([]byte(fmt.Sprintf(
+	endoded := fmt.Sprintf(
 		string(BROADCAST_PREFIX)+"%s%s\n",
 		string(message.Type),
 		message.Content,
-	)))
+	)
+
+	p.ConnLock.Lock()
+	defer p.ConnLock.Unlock()
+
+	p.Conn.Write([]byte(endoded))
 }
