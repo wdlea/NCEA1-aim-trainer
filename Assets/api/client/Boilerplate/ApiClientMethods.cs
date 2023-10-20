@@ -7,8 +7,8 @@ namespace api
 {
     public static partial class Client
     {
-        const string SERVER_ADDR = "127.0.0.1";
-        const int SERVER_PORT = 80;
+        const string SERVER_ADDR = "192.168.1.72";
+        const int SERVER_PORT = 8088;// NOTE that this port is not the same as the docker one
 
         /// <summary>
         /// Starts all the necessary things and joins the server.

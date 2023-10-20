@@ -51,7 +51,7 @@ namespace api
 
             int currentBackoff = 10; //ms
 
-            while(endpoint == serverEndpoint)
+            while(endpoint == serverEndpoint)//stop trying if the endpoint changes because this will be called again
             {
                 try
                 {

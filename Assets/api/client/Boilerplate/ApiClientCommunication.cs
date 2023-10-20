@@ -125,17 +125,35 @@ namespace api
             Debug.Log("Connection closed");
         }
 
+
+        static SemaphoreSlim _claimLock = new(0, 1);
         /// <summary>
         /// Handles executing plugins then matching a packet to a claim
         /// </summary>
         /// <param name="p">The packet to match</param>
-        private static bool HandlePacket(Packet p)
+        private static async Task<bool> HandlePacket(Packet p)
         {
             Packet? processed = ApplyPlugins(p);
             if (processed is null) return true;
             p = processed;
+            
+            Claim claim;
+            await _claimLock.WaitAsync();//stop claims from getting out of order
+            
+            try{
 
-            return _claimQueue.TryDequeue(out Claim claim) && claim.CheckPacket(p);
+                while(!_claimQueue.TryDequeue(out claim)){
+                    await Task.Yield();
+                    
+                    if(!IsConnected) 
+                        return false;
+                }
+
+            }finally{
+                _claimLock.Release();
+            }
+            
+            return claim.CheckPacket(p);
         }
 
         /// <summary>
@@ -158,12 +176,14 @@ namespace api
                     {
                         currentPacket.AddRange(fragment[0..index]);
 
-                        byte[] bytes = currentPacket.ToArray();
-                        Packet p = new Packet(bytes);
+                        Packet p = new Packet(currentPacket.ToArray());
+
+                        Task<bool> match = HandlePacket(p);
 
                         currentPacket.Clear();
+                        currentPacket.TrimExcess();
 
-                        if (!HandlePacket(p))
+                        if (!await match)
                             Debug.Log("Unable to match packet");
                     }  
                     else{
