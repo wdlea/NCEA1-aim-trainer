@@ -59,7 +59,6 @@ AcceptLoop:
 func AcceptAllConnections(listener net.Listener, connChannel chan<- net.Conn) {
 	for {
 		conn, err := listener.Accept()
-
 		if err != nil {
 			fmt.Printf("Error in accepting connection: " + err.Error())
 			continue

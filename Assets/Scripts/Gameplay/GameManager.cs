@@ -49,33 +49,19 @@ public class GameManager : MonoBehaviour
 
     IEnumerator UpdateGame()
     {
-        Task<Game>? game = null;
-
         while (!Broadcasts.IsGameRunning)
             yield return null;//Yield until game start
 
         while (Broadcasts.IsGameRunning)
         {
-            if (game is not null)
-            {
-                yield return null;
+            Task<Game> req = Methods.SendFrame(_me.Frame);
+            yield return new WaitUntil(() => {
+                return req.IsCompleted;
+            });
+            
+            Game game = req.GetAwaiter().GetResult();
 
-                try{
-                    if(game.IsCompletedSuccessfully){
-                        Debug.Log("Frame successfully sent");
-                        Game result = game.GetAwaiter().GetResult();
-                        ApplyGame(result);
-                    }else if(game.IsCompleted || game.IsFaulted || game.IsCanceled){
-                        Debug.Log("Frame unsucessful");
-                        game.GetAwaiter().GetResult();
-                    }else continue;//go back to start if promise not fulfiled
-                }catch(Exception e){
-                    Debug.LogError(e);
-                }
-            }
-            Debug.Log("Creating new frame request");
-            //create a new frame request
-            game = Methods.SendFrame(_me.Frame);
+            ApplyGame(game);
         }  
         Debug.Log("Game stopped");
     }

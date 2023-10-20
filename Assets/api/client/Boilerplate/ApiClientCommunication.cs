@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,6 +107,7 @@ namespace api
                 num = await communicationSocket.ReceiveAsync(buffer, SocketFlags.None);
                 _fragments.Enqueue(buffer[0..num]);
             }
+            Debug.Log("Connection closed");
         }
 
         /// <summary>
@@ -117,6 +119,8 @@ namespace api
             Packet? processed = ApplyPlugins(p);
             if (processed is null) return true;
             p = processed;
+
+            Debug.Log("Matching packet of type" + p.Type.ToString());
 
             int attempt = 0;
             const int MAX_ATTEMPTS = 3;
@@ -168,10 +172,14 @@ namespace api
                         if (!await packetMatch)
                             Debug.Log("Unable to match packet");
                     }  
-                    else
+                    else{
                         currentPacket.AddRange(fragment);
+                        Debug.Log("No EOP recieved, adding to packet, current content:" + System.Text.Encoding.UTF8.GetString(currentPacket.ToArray()));
+                    }
+                        
                 }
             }
+            Debug.Log("Connection closed");
         }
 
         private static async Task<int> AtLeastNextRenderFrame()
