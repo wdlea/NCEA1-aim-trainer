@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.PlayerLoop;
 
 #nullable enable
 
@@ -66,6 +67,10 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game stopped");
     }
 
+    void Update(){
+        UpdateTargets();
+    }
+
     void ApplyGame(Game game)
     {
         Debug.Log("applying game");
@@ -90,22 +95,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+#region targets
+
+    Queue<api.objects.Target> _spawnQueue = new();
+    Queue<int> _destroyQueue = new();
+    void UpdateTargets(){
+        while(_spawnQueue.TryDequeue(out api.objects.Target spawn)){
+            Target t = Instantiate(_targetPrefab, _playerParent);
+            t.Tar = spawn;
+            t.Update();
+
+            _targets[spawn.ID] = t;
+        }
+        while(_destroyQueue.TryDequeue(out int id)){
+            if(_targets.TryGetValue(id, out Target destroyed))
+            {
+                _targets.Remove(id);
+
+                destroyed.DestroyTarget();
+            }
+        }
+        
+    }
+
+    //It is UNSAFE to call "unity" methods in OnTargetSpawn and OnTargetDestroy
     void OnTargetSpawn(api.objects.Target target)
     {
-        Target t = Instantiate(_targetPrefab, _playerParent);
-        t.Tar = target;
-        t.Update();
-
-        _targets[target.ID] = t;
+        _spawnQueue.Enqueue(target);
     }
 
     void OnTargetDestroy(int id)
     {
-        if(_targets.TryGetValue(id, out Target destroyed))
-        {
-            _targets.Remove(id);
-
-            destroyed.DestroyTarget();
-        }
+        _destroyQueue.Enqueue(id);
     }
+
+#endregion
 }
