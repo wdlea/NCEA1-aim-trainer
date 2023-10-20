@@ -23,7 +23,6 @@ namespace api
                 packet,
                 (Packet p) =>
                 {
-                    Debug.Log("Checking packet of type " + p.Type + " for frame");
                     return p.Type == PacketType.ClientBoundFrameResponse || p.Type == PacketType.Error;
                 }
             );

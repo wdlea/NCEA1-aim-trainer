@@ -114,32 +114,13 @@ namespace api
         /// Handles executing plugins then matching a packet to a claim
         /// </summary>
         /// <param name="p">The packet to match</param>
-        private static async Task<bool> HandlePacket(Packet p)
+        private static bool HandlePacket(Packet p)
         {
             Packet? processed = ApplyPlugins(p);
             if (processed is null) return true;
             p = processed;
 
-            Debug.Log("Matching packet of type" + p.Type.ToString());
-
-            int attempt = 0;
-            const int MAX_ATTEMPTS = 3;
-
-            while (IsConnected && attempt++ < MAX_ATTEMPTS)
-            {
-                while (_claimQueue.TryPeek(out Claim claim))
-                {
-                    if (claim.CheckPacket(p)){
-                        _claimQueue.TryDequeue(out _);//dequeue packet
-                        return true;
-                    }
-                    else throw new UnexpectedPacketException();//packets are FIFO
-                }
-
-                await AtLeastNextRenderFrame();//here so i can remove the exception on false if I decide to change how packets are handled
-            }
-
-            return false;
+            return _claimQueue.TryDequeue(out Claim claim) && claim.CheckPacket(p);
         }
 
         /// <summary>
@@ -165,19 +146,18 @@ namespace api
                         byte[] bytes = currentPacket.ToArray();
                         Packet p = new Packet(bytes);
 
-                        Task<bool> packetMatch = HandlePacket(p);
-
                         currentPacket.Clear();
 
-                        if (!await packetMatch)
+                        if (!HandlePacket(p))
                             Debug.Log("Unable to match packet");
                     }  
                     else{
                         currentPacket.AddRange(fragment);
                         Debug.Log("No EOP recieved, adding to packet, current content:" + System.Text.Encoding.UTF8.GetString(currentPacket.ToArray()));
-                    }
-                        
+                    }   
                 }
+
+                await Task.Yield();
             }
             Debug.Log("Connection closed");
         }

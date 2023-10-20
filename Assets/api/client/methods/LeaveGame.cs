@@ -21,7 +21,7 @@ namespace api {
                 }
             );
 
-            if (response.Type != PacketType.ClientBoundLeaveResponse)
+            if (response.Type == PacketType.ClientBoundLeaveResponse)
                 return;
             else throw new UnexpectedPacketException();
         }
