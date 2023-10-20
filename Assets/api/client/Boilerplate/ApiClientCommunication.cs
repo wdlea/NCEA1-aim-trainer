@@ -87,6 +87,9 @@ namespace api
                 _fragments.Clear();
 
                 await Task.WhenAll(recieveTask, processTask);
+
+                recieveTask.Dispose();
+                processTask.Dispose();
             };
 
             Surrogate.onQuit.Enqueue(() => _cleanup?.Invoke());
@@ -102,9 +105,21 @@ namespace api
             byte[] buffer = new byte[BUFFER_SIZE];
             int num;
 
-            while (IsConnected)
+            Task disconnect = ServerDisconnect(10);
+
+            while (true)
             {
-                num = await communicationSocket.ReceiveAsync(buffer, SocketFlags.None);
+                Task<int> recieveTask = communicationSocket.ReceiveAsync(buffer, SocketFlags.None);
+
+                await Task.WhenAny(
+                    recieveTask,
+                    disconnect
+                );
+
+                if(!IsConnected)
+                    break;
+
+                num = await recieveTask;//should complete immediately if the above check passes becuase the WhenAny must have returned becuase of this task
                 _fragments.Enqueue(buffer[0..num]);
             }
             Debug.Log("Connection closed");
@@ -162,13 +177,42 @@ namespace api
             Debug.Log("Connection closed");
         }
 
-        private static async Task<int> AtLeastNextRenderFrame()
-        {
-            int initialFrame = Time.frameCount;
+        /// <summary>
+        /// Returns when client disconnects from the server.
+        /// </summary>
+        /// <param name="checkFrequency">The frequency (per second) to check
+        /// for a disconnect</param>
+        /// <returns>A task that completes when the server disconnects</returns>
+        public static async Task ServerDisconnect(int checkFrequency){
+            int checkInterval = 1000/checkFrequency;
 
-            while (Time.frameCount <= initialFrame && IsConnected) await Task.Yield();
+            while(IsConnected)
+                await Task.Delay(checkInterval);
 
-            return Time.frameCount - initialFrame;
+            return;
+        }
+
+
+        /// <summary>
+        /// A delegate which cancels the operation when it returns true.
+        /// </summary>
+        /// <returns>Whether to cancel.</returns>
+        public delegate bool CancelSignal();
+
+        /// <summary>
+        ///  Returns when the client disconnects from the server or when cancel returns true.
+        /// </summary>
+        /// <param name="checkFrequency">The frequency (per second) to check
+        /// for a disconnect.</param>
+        /// <param name="cancel">A delegate which is executed checkFrequency times a second.</param>
+        /// <returns>A task that completes when the server disconnects or this is canceled</returns>
+        public static async Task ServerDisconnect(int checkFrequency, CancelSignal cancel){
+            int checkInterval = 1000/checkFrequency;
+
+            while(IsConnected && !cancel.Invoke())
+                await Task.Delay(checkInterval);
+
+            return;
         }
     }
 
